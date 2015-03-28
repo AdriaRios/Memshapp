@@ -1,10 +1,8 @@
 package org.adriarios.memshapp.activities;
 
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
@@ -13,7 +11,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,8 +22,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.VideoView;
 
-import org.adriarios.memshapp.contentprovider.MemoriesProvider;
 import org.adriarios.memshapp.R;
+import org.adriarios.memshapp.contentprovider.MemoriesProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
-public class AddMemoryAC extends Activity {
+public class AddMemoryAC extends ActionBarActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int REQUEST_VIDEO_CAPTURE = 2;
     static final int REQUEST_TAKE_PHOTO = 1;
@@ -56,13 +56,20 @@ public class AddMemoryAC extends Activity {
 
     String mCurrentPhotoPath;
     String mCurrentVideoPath;
+    Double mLatitude;
+    Double mLongitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //getMemories();
+        initCustomMenu();
+
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        mLatitude = extras.getDouble("EXTRA_LAT");
+        mLongitude= extras.getDouble("EXTRA_LON");
 
         //Parte del botón para capturar audio
         //Test añadir comentario
@@ -127,44 +134,33 @@ public class AddMemoryAC extends Activity {
 
     }
 
-    private void getMemories() {
-        this.contentResolver = getContentResolver();
+    private void initCustomMenu(){
+        android.support.v7.app.ActionBar myActionVarSupport = getSupportActionBar();
+        myActionVarSupport.setDisplayShowHomeEnabled(false);
+        myActionVarSupport.setDisplayShowTitleEnabled(false);
+        LayoutInflater mInflater = LayoutInflater.from(this);
 
-        Cursor coursesListCursor = this.contentResolver.query(
-                MemoriesProvider.CONTENT_URI,
-                new String[]{MemoriesProvider.MEMORY_IMAGE, MemoriesProvider.MEMORY_AUDIO, MemoriesProvider.MEMORY_VIDEO},
-                null,
-                null,
-                null);
-        fromCursor(coursesListCursor);
-        //  Log.i("a","a");
-    }
+        View mCustomView = mInflater.inflate(R.layout.add_memory_custom_actionbar, null);
 
-    private void fromCursor(Cursor cursor) {
+        ImageView imageButton = (ImageView) mCustomView
+                .findViewById(R.id.backToMemoriesList);
+        imageButton.setOnClickListener(new View.OnClickListener() {
 
-        if (cursor.moveToFirst()) {
-            do {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(AddMemoryAC.this,
+                        ShowMemoriesAC.class);
 
+                startActivity(intent);
+            }
+        });
 
-                String imagePath = cursor.getString(
-                        cursor.getColumnIndex(MemoriesProvider.MEMORY_IMAGE)
-                );
-                String audioPath = cursor.getString(
-                        cursor.getColumnIndex(MemoriesProvider.MEMORY_AUDIO)
-                );
-                String videoPath = cursor.getString(
-                        cursor.getColumnIndex(MemoriesProvider.MEMORY_VIDEO)
-                );
-                Log.i("BBDD","Imagen: "+imagePath);
-                Log.i("BBDD","Video:"+audioPath);
-                Log.i("BBDD","Audio:"+videoPath);
-
-                Log.i("BBDD","FIN");
-
-            } while (cursor.moveToNext());
-        }
+        myActionVarSupport.setCustomView(mCustomView);
+        myActionVarSupport.setDisplayShowCustomEnabled(true);
 
     }
+
+
 
     private void startMemoryOnBBDD() {
         // Open the database for writing
@@ -177,8 +173,8 @@ public class AddMemoryAC extends Activity {
         values.put(MemoriesProvider.MEMORY_AUDIO, mFileName);
         values.put(MemoriesProvider.MEMORY_VIDEO, mCurrentVideoPath);
         values.put(MemoriesProvider.MEMORY_IMAGE, mCurrentPhotoPath);
-        values.put(MemoriesProvider.MEMORY_LATITUDE, 2.01);
-        values.put(MemoriesProvider.MEMORY_LONGITUDE, 43.02);
+        values.put(MemoriesProvider.MEMORY_LATITUDE, mLatitude);
+        values.put(MemoriesProvider.MEMORY_LONGITUDE, mLongitude);
 
         // Save the data through the ContentProvider
         contentResolver.insert(MemoriesProvider.CONTENT_URI, values);

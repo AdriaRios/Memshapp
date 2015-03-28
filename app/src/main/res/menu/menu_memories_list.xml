@@ -4,8 +4,14 @@
     tools:context="org.adriarios.memshapp.activities.ShowMemoriesAC">
     <item android:id="@+id/addMemory"
         android:icon="@drawable/add_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         app:showAsAction="always"
-        android:title="add" />
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
+        android:title="Add" />
+    <item android:id="@+id/searchMemory"
+        android:icon="@drawable/search_icon"
+        android:layout_width="19dp"
+        android:layout_height="20dp"
+        app:showAsAction="always"
+        android:title="Serch" />
 </menu>

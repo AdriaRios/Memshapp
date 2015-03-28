@@ -1,5 +1,6 @@
 package org.adriarios.memshapp.activities;
 
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
@@ -7,10 +8,11 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -18,9 +20,9 @@ import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.location.LocationServices;
 
-import org.adriarios.memshapp.contentprovider.MemoriesProvider;
 import org.adriarios.memshapp.R;
 import org.adriarios.memshapp.adapter.MemoryAdapter;
+import org.adriarios.memshapp.contentprovider.MemoriesProvider;
 import org.adriarios.memshapp.valueobjects.MemoryDataVO;
 
 import java.util.ArrayList;
@@ -69,7 +71,25 @@ public class ShowMemoriesAC extends ActionBarActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_memories_list);
         gridview = (GridView) findViewById(R.id.gridView);
+        initCustomMenu();
         buildGoogleApiClient();
+
+
+
+    }
+
+    private void initCustomMenu(){
+        android.support.v7.app.ActionBar myActionVarSupport = getSupportActionBar();
+        myActionVarSupport.setDisplayShowHomeEnabled(false);
+        myActionVarSupport.setDisplayShowTitleEnabled(false);
+        LayoutInflater mInflater = LayoutInflater.from(this);
+
+        View mCustomView = mInflater.inflate(R.layout.show_memories_custom_actionbar, null);
+
+
+        myActionVarSupport.setCustomView(mCustomView);
+        myActionVarSupport.setDisplayShowCustomEnabled(true);
+
     }
 
     private void getMemories() {
@@ -77,7 +97,14 @@ public class ShowMemoriesAC extends ActionBarActivity implements
 
         Cursor coursesListCursor = this.contentResolver.query(
                 MemoriesProvider.CONTENT_URI,
-                new String[]{MemoriesProvider.MEMORY_TITLE,MemoriesProvider.MEMORY_TEXT, MemoriesProvider.MEMORY_IMAGE, MemoriesProvider.MEMORY_AUDIO, MemoriesProvider.MEMORY_VIDEO},
+                new String[]{MemoriesProvider.MEMORY_TITLE,
+                        MemoriesProvider.MEMORY_TEXT,
+                        MemoriesProvider.MEMORY_IMAGE,
+                        MemoriesProvider.MEMORY_AUDIO,
+                        MemoriesProvider.MEMORY_VIDEO,
+                        MemoriesProvider.MEMORY_LATITUDE,
+                        MemoriesProvider.MEMORY_LONGITUDE
+                },
                 null,
                 null,
                 null);
@@ -104,6 +131,12 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                 String videoPath = cursor.getString(
                         cursor.getColumnIndex(MemoriesProvider.MEMORY_VIDEO)
                 );
+                Double latitude = cursor.getDouble(
+                        cursor.getColumnIndex(MemoriesProvider.MEMORY_LATITUDE)
+                );
+                Double longitude = cursor.getDouble(
+                        cursor.getColumnIndex(MemoriesProvider.MEMORY_LONGITUDE)
+                );
 
 
                 memoryList.add(
@@ -113,9 +146,8 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                                 audioPath,
                                 videoPath,
                                 imagePath,
-                                2.02,
-                                43.02));
-                Log.i("BBDD","FIN");
+                                latitude,
+                                longitude));
 
             } while (cursor.moveToNext());
         }
@@ -141,9 +173,21 @@ public class ShowMemoriesAC extends ActionBarActivity implements
             case R.id.action_settings:
                 return true;
             case R.id.addMemory:
-                Intent i = new Intent(ShowMemoriesAC.this,
-                        AddMemoryAC.class);
-                startActivity(i);
+                if (mLastLocation!=null) {
+                    Intent intent = new Intent(ShowMemoriesAC.this,
+                            AddMemoryAC.class);
+                    Bundle extras = new Bundle();
+                    extras.putDouble("EXTRA_LAT",mLastLocation.getLatitude());
+                    extras.putDouble("EXTRA_LON",mLastLocation.getLongitude());
+                    intent.putExtras(extras);
+                    startActivity(intent);
+                }else{
+                    new AlertDialog.Builder(this)
+                            .setTitle("Location unavaiable")
+                            .setPositiveButton("OK", null)
+                            .setMessage("The location must be enabled")
+                            .show();
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -177,17 +221,6 @@ public class ShowMemoriesAC extends ActionBarActivity implements
         // updates. Gets the best and most recent location currently available, which may be null
         // in rare cases when a location is not available.
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if (mLastLocation != null) {
-            Log.i("GOOGLE_LOCATION", "Latitude: "+mLastLocation.getLatitude());
-            Log.i("GOOGLE_LOCATION", "Longitude: "+mLastLocation.getLongitude());
-
-            Toast.makeText(this, "Location: "+mLastLocation.getLatitude()+" "+mLastLocation.getLongitude(), Toast.LENGTH_LONG).show();
-           // mLatitudeText.setText(String.valueOf(mLastLocation.getLatitude()));
-            // mLongitudeText.setText(String.valueOf(mLastLocation.getLongitude()));
-        } else {
-            Log.i("GOOGLE_LOCATION", "No location detected");
-            Toast.makeText(this, "No location detected", Toast.LENGTH_LONG).show();
-        }
     }
 
     @Override
