@@ -1,4 +1,4 @@
-package org.adriarios.memshapp;
+package org.adriarios.memshapp.activities;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -22,13 +22,16 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.VideoView;
 
+import org.adriarios.memshapp.contentprovider.MemoriesProvider;
+import org.adriarios.memshapp.R;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
-public class MainActivity extends Activity {
+public class AddMemoryAC extends Activity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int REQUEST_VIDEO_CAPTURE = 2;
     static final int REQUEST_TAKE_PHOTO = 1;

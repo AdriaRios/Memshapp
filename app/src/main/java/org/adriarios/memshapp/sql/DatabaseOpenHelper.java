@@ -1,4 +1,4 @@
-package org.adriarios.memshapp;
+package org.adriarios.memshapp.sql;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -13,15 +13,15 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     private static final int		DATABASE_VERSION = 1;
 
     // Variables holding the name of the table and columns to be created
-    static final String		MEMORY_TABLE_NAME = "MEMORY";
-    static final String		_ID = "_id";
-    static final String		MEMORY_TITLE = "tile";
-    static final String		MEMORY_TEXT = "text";
-    static final String		MEMORY_AUDIO = "audio";
-    static final String		MEMORY_VIDEO = "video";
-    static final String		MEMORY_IMAGE = "image";
-    static final String		MEMORY_LATITUDE = "latitude";
-    static final String		MEMORY_LONGITUDE = "longitude";
+    public static final String		MEMORY_TABLE_NAME = "MEMORY";
+    public static final String		_ID = "_id";
+    public static final String		MEMORY_TITLE = "tile";
+    public static final String		MEMORY_TEXT = "text";
+    public static final String		MEMORY_AUDIO = "audio";
+    public static final String		MEMORY_VIDEO = "video";
+    public static final String		MEMORY_IMAGE = "image";
+    public static final String		MEMORY_LATITUDE = "latitude";
+    public static final String		MEMORY_LONGITUDE = "longitude";
 
     // Static variable containing the name of all the table's columns
     static final String[] COLUMNS = {

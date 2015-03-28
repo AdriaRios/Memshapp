@@ -1,4 +1,4 @@
-package org.adriarios.memshapp;
+package org.adriarios.memshapp.contentprovider;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -6,6 +6,9 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;
+
+import org.adriarios.memshapp.sql.DatabaseOpenHelper;
+import org.adriarios.memshapp.sql.SQLiteDataRepository;
 
 /**
  * Created by Adrian on 21/03/2015.

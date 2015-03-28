@@ -1,9 +1,11 @@
-package org.adriarios.memshapp.adapter;
+package org.adriarios.memshapp.asynctask;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.widget.ImageView;
+
+import org.adriarios.memshapp.models.ImagesDataModel;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.ref.WeakReference;
@@ -11,7 +13,7 @@ import java.lang.ref.WeakReference;
 /**
  * Created by Adrian on 23/03/2015.
  */
-class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
+public class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
     private  String mCurrentPhotoPath;
     private final WeakReference<ImageView> imageViewReference;
     private int data = 0;
@@ -55,7 +57,7 @@ class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
             final ImageView imageView = imageViewReference.get();
             if (imageView != null) {
                 imageView.setImageBitmap(bitmap);
-                ImagesData.getInstance().addBitmapToMemoryCache(mCurrentPhotoPath, bitmap);
+                ImagesDataModel.getInstance().addBitmapToMemoryCache(mCurrentPhotoPath, bitmap);
             }
         }
     }

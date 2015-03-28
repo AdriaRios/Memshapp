@@ -16,18 +16,18 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="org.adriarios.memshapp.MainActivity"
+            android:name=".activities.AddMemoryAC"
             android:label="@string/app_name" >
         </activity>
 
         <provider
-            android:name="org.adriarios.memshapp.MemoriesProvider"
+            android:name=".contentprovider.MemoriesProvider"
             android:authorities="org.adriarios.memshapp.sqlite.provider"
             android:exported="true" >
         </provider>
 
         <activity
-            android:name="org.adriarios.memshapp.MemoriesList"
+            android:name=".activities.ShowMemoriesAC"
             android:label="@string/title_activity_memories_list" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

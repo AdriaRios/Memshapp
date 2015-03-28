@@ -1,4 +1,4 @@
-package org.adriarios.memshapp;
+package org.adriarios.memshapp.activities;
 
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -18,17 +18,19 @@ import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.location.LocationServices;
 
+import org.adriarios.memshapp.contentprovider.MemoriesProvider;
+import org.adriarios.memshapp.R;
 import org.adriarios.memshapp.adapter.MemoryAdapter;
-import org.adriarios.memshapp.adapter.MemoryData;
+import org.adriarios.memshapp.valueobjects.MemoryDataVO;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class MemoriesList extends ActionBarActivity implements
+public class ShowMemoriesAC extends ActionBarActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
     ContentResolver contentResolver;
-    List<MemoryData> memoryList;
+    List<MemoryDataVO> memoryList;
 
     GridView gridview;
     MemoryAdapter memoryAdapter;
@@ -83,7 +85,7 @@ public class MemoriesList extends ActionBarActivity implements
     }
 
     private void fromCursor(Cursor cursor) {
-        memoryList = new ArrayList<MemoryData>();
+        memoryList = new ArrayList<MemoryDataVO>();
         if (cursor.moveToFirst()) {
             do {
 
@@ -105,7 +107,7 @@ public class MemoriesList extends ActionBarActivity implements
 
 
                 memoryList.add(
-                        new MemoryData(
+                        new MemoryDataVO(
                                 memoryTitle,
                                 memoryDesc,
                                 audioPath,
@@ -139,8 +141,8 @@ public class MemoriesList extends ActionBarActivity implements
             case R.id.action_settings:
                 return true;
             case R.id.addMemory:
-                Intent i = new Intent(MemoriesList.this,
-                        MainActivity.class);
+                Intent i = new Intent(ShowMemoriesAC.this,
+                        AddMemoryAC.class);
                 startActivity(i);
                 return true;
             default:

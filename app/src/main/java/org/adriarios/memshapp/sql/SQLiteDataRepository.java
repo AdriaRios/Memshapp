@@ -1,4 +1,4 @@
-package org.adriarios.memshapp;
+package org.adriarios.memshapp.sql;
 
 import android.content.ContentValues;
 import android.content.Context;

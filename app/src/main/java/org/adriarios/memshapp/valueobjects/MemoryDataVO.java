@@ -1,9 +1,9 @@
-package org.adriarios.memshapp.adapter;
+package org.adriarios.memshapp.valueobjects;
 
 /**
  * Created by Adrian on 22/03/2015.
  */
-public class MemoryData {
+public class MemoryDataVO {
     private String title;
     private String text;
     private String audioPath;
@@ -12,13 +12,13 @@ public class MemoryData {
     private Double latitude;
     private Double longitude;
 
-    public MemoryData(String title,
-                      String text,
-                      String audioPath,
-                      String videoPath,
-                      String imagePath,
-                      Double latitude,
-                      Double longitude) {
+    public MemoryDataVO(String title,
+                        String text,
+                        String audioPath,
+                        String videoPath,
+                        String imagePath,
+                        Double latitude,
+                        Double longitude) {
         this.title = title;
         this.text = text;
         this.audioPath = audioPath;

@@ -11,6 +11,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.adriarios.memshapp.R;
+import org.adriarios.memshapp.asynctask.BitmapWorkerTask;
+import org.adriarios.memshapp.models.ImagesDataModel;
+import org.adriarios.memshapp.valueobjects.MemoryDataVO;
 
 import java.util.List;
 
@@ -23,12 +26,12 @@ public class MemoryAdapter extends BaseAdapter {
     Context context;
 
     // List of memories that will be rendered in the GridView
-    List<MemoryData> memoriesList;
+    List<MemoryDataVO> memoriesList;
     private LruCache<String, Bitmap> mMemoryCache;
 
 
     // Set the context and user list from the constructor
-    public MemoryAdapter(Context context, List<MemoryData> memoriesList) {
+    public MemoryAdapter(Context context, List<MemoryDataVO> memoriesList) {
         this.context = context;
         this.memoriesList = memoriesList;
 
@@ -69,7 +72,7 @@ public class MemoryAdapter extends BaseAdapter {
             currentView = inflater.inflate(R.layout.memory_item, parent, false);
         }
 
-        MemoryData memoryData = memoriesList.get(position);
+        MemoryDataVO memoryData = memoriesList.get(position);
         ((TextView) currentView.findViewById(R.id.textViewTest)).setText(memoryData.getTitle());
        setPic(((ImageView) currentView.findViewById(R.id.imageView2)), memoryData.getImagePath());
 
@@ -77,7 +80,7 @@ public class MemoryAdapter extends BaseAdapter {
     }
 
     private void setPic(ImageView mImageView, String mCurrentPhotoPath) {
-        if (ImagesData.getInstance().getBitmapFromMemCache(mCurrentPhotoPath)==null) {
+        if (ImagesDataModel.getInstance().getBitmapFromMemCache(mCurrentPhotoPath)==null) {
             BitmapWorkerTask task = new BitmapWorkerTask(mImageView,mCurrentPhotoPath);
             task.execute();
             // Get the dimensions of the bitmap
@@ -102,7 +105,7 @@ public class MemoryAdapter extends BaseAdapter {
             mImageView.setImageBitmap(bitmap);
             addBitmapToMemoryCache (mCurrentPhotoPath, bitmap);*/
         }else{
-            mImageView.setImageBitmap(ImagesData.getInstance().getBitmapFromMemCache(mCurrentPhotoPath));
+            mImageView.setImageBitmap(ImagesDataModel.getInstance().getBitmapFromMemCache(mCurrentPhotoPath));
         }
     }
 

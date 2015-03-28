@@ -1,4 +1,4 @@
-package org.adriarios.memshapp.adapter;
+package org.adriarios.memshapp.models;
 
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
@@ -6,9 +6,9 @@ import android.support.v4.util.LruCache;
 /**
  * Created by Adrian on 23/03/2015.
  */
-public class ImagesData
+public class ImagesDataModel
 {
-    private static ImagesData instance;
+    private static ImagesDataModel instance;
 
     public static String customVar="Hello";
     public LruCache<String, Bitmap> mMemoryCache;
@@ -18,17 +18,17 @@ public class ImagesData
         if (instance == null)
         {
             // Create the instance
-            instance = new ImagesData();
+            instance = new ImagesDataModel();
         }
     }
 
-    public static ImagesData getInstance()
+    public static ImagesDataModel getInstance()
     {
         // Return the instance
         if (instance == null)
         {
             // Create the instance
-            instance = new ImagesData();
+            instance = new ImagesDataModel();
 
             // Get max available VM memory, exceeding this amount will throw an
             // OutOfMemory exception. Stored in kilobytes as LruCache takes an
@@ -50,7 +50,7 @@ public class ImagesData
         return instance;
     }
 
-    private ImagesData()
+    private ImagesDataModel()
     {
         // Constructor hidden because this is a singleton
     }
