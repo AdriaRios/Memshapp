@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="50dp"
     >
-    <ImageView
-        android:id="@+id/backToMemoriesList"
+    <ImageButton
+        android:id="@+id/backToAddMemory"
         android:layout_width="12dp"
         android:layout_height="18dp"
         android:layout_alignParentLeft="true"

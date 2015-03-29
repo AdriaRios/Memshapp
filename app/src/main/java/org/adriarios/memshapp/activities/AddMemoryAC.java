@@ -5,8 +5,6 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -17,10 +15,8 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.VideoView;
+import android.widget.ImageButton;
 
 import org.adriarios.memshapp.R;
 import org.adriarios.memshapp.contentprovider.MemoriesProvider;
@@ -34,26 +30,24 @@ import java.util.Date;
 public class AddMemoryAC extends ActionBarActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int REQUEST_VIDEO_CAPTURE = 2;
-    static final int REQUEST_TAKE_PHOTO = 1;
+    static final int REQUEST_AUDIO_CAPTURE = 3;
     //Controls
-    ImageView mImageView;
-    VideoView mVideoView;
+    ImageButton mImageButton;
 
-    Button mVideoButton;
-    Button mRecordAudioButton;
-    Button mStopAudioButton;
-    Button mPlayAudioButton;
-    Button mSaveButton;
+    ImageButton mVideoButton;
+
+    ImageButton mRecordAudio;
+
 
     EditText mTitleET;
     EditText mDescriptionET;
 
-    MediaRecorder mRecorder = null;
-    MediaPlayer mPlayer = null;
-    String mFileName = null;
+
+
+
 
     ContentResolver contentResolver;
-
+    String mCurrentAudioPath = null;
     String mCurrentPhotoPath;
     String mCurrentVideoPath;
     Double mLatitude;
@@ -62,7 +56,7 @@ public class AddMemoryAC extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_add_memories);
 
         initCustomMenu();
 
@@ -77,32 +71,9 @@ public class AddMemoryAC extends ActionBarActivity {
         mTitleET = (EditText) findViewById(R.id.titleET);
 
 
-        mFileName = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getAbsolutePath();
-        mFileName += "/audiorecordtest.3gp";
-        mRecordAudioButton = (Button) findViewById(R.id.startAudioButton);
-        mRecordAudioButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                startRecording();
-            }
-        });
 
-        mStopAudioButton = (Button) findViewById(R.id.stopAudioButton);
-        mStopAudioButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                stopRecording();
-            }
-
-        });
-
-        mPlayAudioButton = (Button) findViewById(R.id.playAudioButton);
-        mPlayAudioButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                playAudioRecorded();
-            }
-
-        });
         //Parte del botón para capturar video
-        mVideoButton = (Button) findViewById(R.id.videoButton);
+        mVideoButton = (ImageButton) findViewById(R.id.videoView);
         mVideoButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 dispatchTakeVideoIntent();
@@ -112,24 +83,23 @@ public class AddMemoryAC extends ActionBarActivity {
 
 
         //Parte de la imagen
-        mImageView = (ImageView) findViewById(R.id.imageView);
-        mImageView.setOnClickListener(new View.OnClickListener() {
+        mImageButton = (ImageButton) findViewById(R.id.imageView);
+        mImageButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 dispatchTakePictureIntent();
             }
 
         });
 
-        //Parte del video
-        mVideoView = (VideoView) findViewById(R.id.videoView);
-        mVideoView.setVisibility(View.INVISIBLE);
+        //Parte del audio
 
-        //Parte guardar en BBDD
-        mSaveButton = (Button) findViewById(R.id.saveButton);
-        mSaveButton.setOnClickListener(new View.OnClickListener() {
+        mRecordAudio = (ImageButton) findViewById(R.id.recordView);
+        mRecordAudio.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                startMemoryOnBBDD();
+                Intent intent = new Intent(AddMemoryAC.this, RecordAudioAC.class);
+                startActivityForResult(intent, REQUEST_AUDIO_CAPTURE);
             }
+
         });
 
     }
@@ -140,9 +110,9 @@ public class AddMemoryAC extends ActionBarActivity {
         myActionVarSupport.setDisplayShowTitleEnabled(false);
         LayoutInflater mInflater = LayoutInflater.from(this);
 
-        View mCustomView = mInflater.inflate(R.layout.add_memory_custom_actionbar, null);
+        View mCustomView = mInflater.inflate(R.layout.menu_add_memories_inflate, null);
 
-        ImageView imageButton = (ImageView) mCustomView
+        ImageButton imageButton = (ImageButton) mCustomView
                 .findViewById(R.id.backToMemoriesList);
         imageButton.setOnClickListener(new View.OnClickListener() {
 
@@ -170,7 +140,7 @@ public class AddMemoryAC extends ActionBarActivity {
         ContentValues values = new ContentValues();
         values.put(MemoriesProvider.MEMORY_TITLE, mTitleET.getText().toString());
         values.put(MemoriesProvider.MEMORY_TEXT, mDescriptionET.getText().toString());
-        values.put(MemoriesProvider.MEMORY_AUDIO, mFileName);
+        values.put(MemoriesProvider.MEMORY_AUDIO, mCurrentAudioPath);
         values.put(MemoriesProvider.MEMORY_VIDEO, mCurrentVideoPath);
         values.put(MemoriesProvider.MEMORY_IMAGE, mCurrentPhotoPath);
         values.put(MemoriesProvider.MEMORY_LATITUDE, mLatitude);
@@ -180,40 +150,6 @@ public class AddMemoryAC extends ActionBarActivity {
         contentResolver.insert(MemoriesProvider.CONTENT_URI, values);
     }
 
-
-    //Audio
-    private void startRecording() {
-        mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecorder.setOutputFile(mFileName);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-        try {
-            mRecorder.prepare();
-        } catch (IOException e) {
-            // Log.e(LOG_TAG, "prepare() failed");
-        }
-
-        mRecorder.start();
-    }
-
-    private void stopRecording() {
-        mRecorder.stop();
-        mRecorder.release();
-        mRecorder = null;
-    }
-
-    private void playAudioRecorded() {
-        mPlayer = new MediaPlayer();
-        try {
-            mPlayer.setDataSource(mFileName);
-            mPlayer.prepare();
-            mPlayer.start();
-        } catch (IOException e) {
-            //Log.e(LOG_TAG, "prepare() failed");
-        }
-    }
 
     private void dispatchTakeVideoIntent() {
         Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
@@ -255,7 +191,7 @@ public class AddMemoryAC extends ActionBarActivity {
             if (photoFile != null) {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                         Uri.fromFile(photoFile));
-                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
         }
     }
@@ -296,22 +232,19 @@ public class AddMemoryAC extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             setPic();
-            galleryAddPic();
         }
 
-        if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
-            //Uri videoUri = data.getData();
-            mVideoView.setVideoURI(Uri.parse(mCurrentVideoPath));
-            mVideoView.start();
-            mVideoView.setVisibility(View.VISIBLE);
-            mVideoButton.setVisibility(View.INVISIBLE);
+        if (requestCode == REQUEST_AUDIO_CAPTURE && resultCode == RESULT_OK) {
+            mCurrentAudioPath = data.getStringExtra("AUDIO_PATH");
         }
+
+
     }
 
     private void setPic() {
         // Get the dimensions of the View
-        int targetW = mImageView.getWidth();
-        int targetH = mImageView.getHeight();
+        int targetW = mImageButton.getWidth();
+        int targetH = mImageButton.getHeight();
 
         // Get the dimensions of the bitmap
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
@@ -329,24 +262,15 @@ public class AddMemoryAC extends ActionBarActivity {
         bmOptions.inPurgeable = true;
 
         Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-        mImageView.setImageBitmap(bitmap);
+        mImageButton.setImageBitmap(bitmap);
     }
-
-    private void galleryAddPic() {
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = new File(mCurrentPhotoPath);
-        Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
-        this.sendBroadcast(mediaScanIntent);
-    }
-
 
     //Métodos por defecto
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_add_memories, menu);
         return true;
     }
 
@@ -358,8 +282,12 @@ public class AddMemoryAC extends ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if(id == R.id.addMemoryButton){
+            startMemoryOnBBDD();
+            Intent intent = new Intent(AddMemoryAC.this,
+                    ShowMemoriesAC.class);
+            startActivity(intent);
+
         }
 
         return super.onOptionsItemSelected(item);

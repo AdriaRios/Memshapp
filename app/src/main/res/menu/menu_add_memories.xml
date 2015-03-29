@@ -1,10 +1,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
-    <item android:id="@+id/shareMemory"
-        android:icon="@drawable/share_icon"
+    <item android:id="@+id/addMemoryButton"
+        android:icon="@drawable/check_icon"
         android:layout_width="20dp"
         android:layout_height="20dp"
         app:showAsAction="always"
-        android:title="Share" />
+        android:title="Ok" />
 </menu>
