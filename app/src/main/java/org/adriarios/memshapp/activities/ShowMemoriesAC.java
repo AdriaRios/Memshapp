@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -53,6 +54,26 @@ public class ShowMemoriesAC extends ActionBarActivity implements
         memoryAdapter = new MemoryAdapter(this, memoryList);
         // Set the Adapter for the GridView
         gridview.setAdapter(memoryAdapter);
+
+        gridview.setOnItemClickListener(new GridView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                Intent i = new Intent();
+                Intent intent = new Intent(ShowMemoriesAC.this,
+                        DetailsMemoryAC.class);
+                Bundle extras = new Bundle();
+                extras.putString("DETAILS_IMAGE_PATH",memoryList.get(position).getImagePath());
+                extras.putString("DETAILS_TITLE",memoryList.get(position).getTitle());
+                extras.putString("DETAILS_DESCRIPTION",memoryList.get(position).getText());
+                intent.putExtras(extras);
+                startActivity(intent);
+
+                /*Toast.makeText(getApplicationContext(),
+                        memoryList.get(position).getTitle(), Toast.LENGTH_LONG)
+                        .show();*/
+            }
+        });
     }
 
     /**
@@ -73,6 +94,7 @@ public class ShowMemoriesAC extends ActionBarActivity implements
         gridview = (GridView) findViewById(R.id.gridView);
         initCustomMenu();
         buildGoogleApiClient();
+
 
 
 

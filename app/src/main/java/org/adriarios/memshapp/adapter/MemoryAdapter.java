@@ -81,7 +81,7 @@ public class MemoryAdapter extends BaseAdapter {
 
     private void setPic(ImageView mImageView, String mCurrentPhotoPath) {
         if (ImagesDataModel.getInstance().getBitmapFromMemCache(mCurrentPhotoPath)==null) {
-            BitmapWorkerTask task = new BitmapWorkerTask(mImageView,mCurrentPhotoPath);
+            BitmapWorkerTask task = new BitmapWorkerTask(mImageView,mCurrentPhotoPath, 200, 200);
             task.execute();
             // Get the dimensions of the bitmap
            /* BitmapFactory.Options bmOptions = new BitmapFactory.Options();

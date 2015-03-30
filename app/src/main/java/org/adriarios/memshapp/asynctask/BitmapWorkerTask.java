@@ -7,18 +7,21 @@ import android.widget.ImageView;
 
 import org.adriarios.memshapp.models.ImagesDataModel;
 
-import java.io.ByteArrayOutputStream;
 import java.lang.ref.WeakReference;
 
 /**
  * Created by Adrian on 23/03/2015.
  */
 public class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
+    private Integer imageW;
+    private Integer imageH;
     private  String mCurrentPhotoPath;
     private final WeakReference<ImageView> imageViewReference;
     private int data = 0;
 
-    public BitmapWorkerTask(ImageView imageView,String mCurrentPhotoPath) {
+    public BitmapWorkerTask(ImageView imageView,String mCurrentPhotoPath, Integer imageW, Integer imageH) {
+        this.imageH = imageH;
+        this.imageW = imageW;
         this.mCurrentPhotoPath = mCurrentPhotoPath;
         // Use a WeakReference to ensure the ImageView can be garbage collected
         imageViewReference = new WeakReference<ImageView>(imageView);
@@ -27,14 +30,19 @@ public class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
     // Decode image in background.
     @Override
     protected Bitmap doInBackground(Integer... params) {
-        //data = params[0];
+        // Get the dimensions of the View
+
+        int targetW = imageW;
+        int targetH = imageH;
         // Get the dimensions of the bitmap
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         bmOptions.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+        int photoW = bmOptions.outWidth;
+        int photoH = bmOptions.outHeight;
 
         // Determine how much to scale down the image
-        int scaleFactor = 5;
+        int scaleFactor = Math.max(photoW / targetW, photoH / targetH);
 
         // Decode the image file into a Bitmap sized to fill the View
         bmOptions.inJustDecodeBounds = false;
@@ -42,9 +50,8 @@ public class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
         bmOptions.inPurgeable = true;
 
         Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-
-        bitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false);
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+      //  bitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false);
+        // ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         // bitmap.compress(Bitmap.CompressFormat.JPEG, 40, bytes);
 
         return bitmap;
