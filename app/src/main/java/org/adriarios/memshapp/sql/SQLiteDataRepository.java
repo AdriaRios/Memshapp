@@ -55,7 +55,7 @@ public class SQLiteDataRepository {
                         null,
                         null,
                         null,
-                        null);
+                        DatabaseOpenHelper._ID+" DESC");
         return result;
     }
 

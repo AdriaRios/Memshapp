@@ -66,6 +66,8 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                 extras.putString("DETAILS_IMAGE_PATH",memoryList.get(position).getImagePath());
                 extras.putString("DETAILS_TITLE",memoryList.get(position).getTitle());
                 extras.putString("DETAILS_DESCRIPTION",memoryList.get(position).getText());
+                extras.putDouble("DETAILS_LATITUDE",memoryList.get(position).getLatitude());
+                extras.putDouble("DETAILS_LONGITUDE",memoryList.get(position).getLongitude());
                 intent.putExtras(extras);
                 startActivity(intent);
 
