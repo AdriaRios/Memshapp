@@ -1,6 +1,7 @@
 package org.adriarios.memshapp.activities;
 
 import android.content.Intent;
+import android.graphics.Point;
 import android.location.Address;
 import android.location.Geocoder;
 import android.media.MediaPlayer;
@@ -8,17 +9,18 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.VideoView;
 import android.widget.MediaController;
+import android.widget.TextView;
 
 import org.adriarios.memshapp.R;
 import org.adriarios.memshapp.asynctask.BitmapWorkerTask;
+import org.adriarios.memshapp.customComponents.VideoViewCustom;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,7 +41,7 @@ public class DetailsMemoryAC extends ActionBarActivity {
     TextView mTitle;
     TextView mDescription;
     TextView mAddress;
-    VideoView mVideoView;
+    VideoViewCustom mVideoView;
     Button mAudioButton;
 
     MediaController mediaController;
@@ -54,7 +56,7 @@ public class DetailsMemoryAC extends ActionBarActivity {
         mTitle = (TextView) findViewById(R.id.titleDetails);
         mDescription = (TextView) findViewById(R.id.descDetails);
         mAddress = (TextView)findViewById(R.id.addressDetails);
-        mVideoView = (VideoView)findViewById(R.id.videoDetails);
+        mVideoView = (VideoViewCustom)findViewById(R.id.videoDetails);
         mAudioButton = (Button)findViewById(R.id.playAudioButtonDetails);
         mAudioButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -62,6 +64,14 @@ public class DetailsMemoryAC extends ActionBarActivity {
             }
 
         });
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        mVideoView.setDimensions(width, width);
         //Get Memory Info
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
