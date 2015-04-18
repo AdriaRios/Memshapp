@@ -18,15 +18,22 @@ import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+
 import org.adriarios.memshapp.R;
 import org.adriarios.memshapp.asynctask.BitmapWorkerTask;
+import org.adriarios.memshapp.customComponents.ScrollViewCustom;
 import org.adriarios.memshapp.customComponents.VideoViewCustom;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-public class DetailsMemoryAC extends ActionBarActivity {
+public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCallback {
     //Data
     String mImagePath;
     String mAudioPath;
@@ -37,6 +44,7 @@ public class DetailsMemoryAC extends ActionBarActivity {
     Double mLongitude;
 
     //View objetcs
+    ScrollViewCustom mScrollView;
     ImageView mImage;
     TextView mTitle;
     TextView mDescription;
@@ -52,6 +60,7 @@ public class DetailsMemoryAC extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details_memory);
         //Init properties
+        mScrollView= (ScrollViewCustom)findViewById(R.id.scrollViewDetails);
         mImage = (ImageView) findViewById(R.id.imageDetails);
         mTitle = (TextView) findViewById(R.id.titleDetails);
         mDescription = (TextView) findViewById(R.id.descDetails);
@@ -93,6 +102,8 @@ public class DetailsMemoryAC extends ActionBarActivity {
         BitmapWorkerTask task = new BitmapWorkerTask(mImage,mImagePath,400,150);
         task.execute();
 
+        initMap();
+
         Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
         try {
             List<Address> listAddresses = geocoder.getFromLocation(mLatitude, mLongitude, 1);
@@ -104,6 +115,21 @@ public class DetailsMemoryAC extends ActionBarActivity {
             e.printStackTrace();
         }
 
+    }
+
+    private void initMap() {
+        MapFragment mapFragment = (MapFragment) getFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+        mScrollView.addInterceptScrollView(mapFragment.getView());
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        // Some buildings have indoor maps. Center the camera over
+        // the building, and a floor picker will automatically appear.
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(mLatitude, mLongitude), 18));
     }
 
     private void initMultimedia() {
