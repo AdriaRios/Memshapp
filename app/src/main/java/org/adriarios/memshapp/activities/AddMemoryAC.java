@@ -1,10 +1,14 @@
 package org.adriarios.memshapp.activities;
 
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -31,6 +35,7 @@ public class AddMemoryAC extends ActionBarActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int REQUEST_VIDEO_CAPTURE = 2;
     static final int REQUEST_AUDIO_CAPTURE = 3;
+    static final int REQUEST_IMAGE_GALLERY_CAPTURE = 4;
     //Controls
     ImageButton mImageButton;
 
@@ -41,9 +46,6 @@ public class AddMemoryAC extends ActionBarActivity {
 
     EditText mTitleET;
     EditText mDescriptionET;
-
-
-
 
 
     ContentResolver contentResolver;
@@ -63,13 +65,12 @@ public class AddMemoryAC extends ActionBarActivity {
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         mLatitude = extras.getDouble("EXTRA_LAT");
-        mLongitude= extras.getDouble("EXTRA_LON");
+        mLongitude = extras.getDouble("EXTRA_LON");
 
         //Parte del botón para capturar audio
         //Test añadir comentario
         mDescriptionET = (EditText) findViewById(R.id.descriptionET);
         mTitleET = (EditText) findViewById(R.id.titleET);
-
 
 
         //Parte del botón para capturar video
@@ -86,7 +87,27 @@ public class AddMemoryAC extends ActionBarActivity {
         mImageButton = (ImageButton) findViewById(R.id.imageView);
         mImageButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                dispatchTakePictureIntent();
+                CharSequence colors[] = new CharSequence[]{"Cámara", "Galería"};
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(AddMemoryAC.this);
+                builder.setTitle("Escoge una opción");
+                builder.setItems(colors, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int option) {
+                        switch (option) {
+                            case 0:
+                                dispatchTakePictureIntent();
+                                break;
+                            case 1:
+                                dispatchTakeGalleryPictureIntent();
+                                break;
+                            default:
+                        }
+                        // the user clicked on colors[which]
+                    }
+                });
+                builder.show();
+
             }
 
         });
@@ -104,7 +125,7 @@ public class AddMemoryAC extends ActionBarActivity {
 
     }
 
-    private void initCustomMenu(){
+    private void initCustomMenu() {
         android.support.v7.app.ActionBar myActionVarSupport = getSupportActionBar();
         myActionVarSupport.setDisplayShowHomeEnabled(false);
         myActionVarSupport.setDisplayShowTitleEnabled(false);
@@ -129,7 +150,6 @@ public class AddMemoryAC extends ActionBarActivity {
         myActionVarSupport.setDisplayShowCustomEnabled(true);
 
     }
-
 
 
     private void startMemoryOnBBDD() {
@@ -173,7 +193,16 @@ public class AddMemoryAC extends ActionBarActivity {
         }
     }
 
-    //IMAGE
+    //IMAGE FROM GALLERY
+    private void dispatchTakeGalleryPictureIntent() {
+        Intent pickPhoto = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(pickPhoto, REQUEST_IMAGE_GALLERY_CAPTURE);
+
+
+    }
+
+    //IMAGE FROM CAMERA
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
@@ -234,8 +263,27 @@ public class AddMemoryAC extends ActionBarActivity {
             setPic();
         }
 
+        if (requestCode == REQUEST_IMAGE_GALLERY_CAPTURE && resultCode == RESULT_OK) {
+            Uri selectedImage = data.getData();
+            String[] filePathColumn = {MediaStore.Images.Media.DATA};
+            Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+            if (cursor.moveToFirst()) {
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                mCurrentPhotoPath = cursor.getString(columnIndex);
+            }
+            cursor.close();
+            setPic();
+        }
+
         if (requestCode == REQUEST_AUDIO_CAPTURE && resultCode == RESULT_OK) {
             mCurrentAudioPath = data.getStringExtra("AUDIO_PATH");
+            Drawable recordCheckIcon = getResources().getDrawable(R.drawable.upload_record_icon_check);
+            mRecordAudio.setImageDrawable(recordCheckIcon);
+        }
+
+        if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
+            Drawable videoCheckIcon = getResources().getDrawable(R.drawable.upload_video_icon_check);
+            mVideoButton.setImageDrawable(videoCheckIcon);
         }
 
 
@@ -282,7 +330,7 @@ public class AddMemoryAC extends ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if(id == R.id.addMemoryButton){
+        if (id == R.id.addMemoryButton) {
             startMemoryOnBBDD();
             Intent intent = new Intent(AddMemoryAC.this,
                     ShowMemoriesAC.class);
