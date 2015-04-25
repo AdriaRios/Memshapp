@@ -5,15 +5,12 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Point;
 import android.location.Address;
 import android.location.Geocoder;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -91,13 +88,9 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
 
         this.contentResolver = getContentResolver();
 
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int width = size.x;
-        int height = size.y;
 
-        mVideoView.setDimensions(width, width);
+
+        mVideoView.setDimensions(900, 900);
         //Get Memory Info
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
@@ -177,8 +170,9 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     }
 
     private void initMultimedia() {
-        Log.i("DETAILS", "video " + mVideoPath);
-        Log.i("DETAILS", "audio " + mAudioPath);
+        if (mImagePath == null){
+            mImage.setVisibility(View.GONE);
+        }
         if (mVideoPath == null) {
             mVideoView.setVisibility(View.GONE);
         } else {
@@ -215,32 +209,27 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     }
 
     private void removeMemory(){
-        final int[] rowsDeleted = new int[1];
-        CharSequence colors[] = new CharSequence[]{"Aceptar", "Cancelar"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(DetailsMemoryAC.this);
-        builder.setTitle("Estás seguro que quieres eliminar este recuerdo?");
-        builder.setItems(colors, new DialogInterface.OnClickListener() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(DetailsMemoryAC.this);
+        dialog.setTitle("Estás seguro que quieres eliminar este recuerdo?");
+        dialog.setNegativeButton("Cancelar", null);
+        dialog.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int option) {
-                switch (option) {
-                    case 0:
-                        CharSequence toastText;
-                        if (contentResolver.delete(MemoriesProvider.CONTENT_URI, MemoriesProvider.MEMORY_ID + "=" + mID, null) > 0){
-                            toastText="Recuerdo eliminado correctamente";
-                        }else{
-                            toastText="Se ha producido un error al eliminar el recuerdo";
-                        }
-                        Context context = getApplicationContext();
-                        int duration = Toast.LENGTH_SHORT;
-                        Toast toast = Toast.makeText(context, toastText, duration);
-                        toast.show();
-                        returnToShowMemories();
-                        break;
-                    default:
+            public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                CharSequence toastText;
+                if (contentResolver.delete(MemoriesProvider.CONTENT_URI, MemoriesProvider.MEMORY_ID + "=" + mID, null) > 0){
+                    toastText="Recuerdo eliminado correctamente";
+                }else{
+                    toastText="Se ha producido un error al eliminar el recuerdo";
                 }
+                Context context = getApplicationContext();
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, toastText, duration);
+                toast.show();
+                returnToShowMemories();
             }
         });
-        builder.show();
+
+        dialog.show();
     }
 
     private void returnToShowMemories() {

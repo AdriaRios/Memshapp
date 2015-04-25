@@ -2,6 +2,7 @@ package org.adriarios.memshapp.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.support.v4.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -74,7 +75,13 @@ public class MemoryAdapter extends BaseAdapter {
 
         MemoryDataVO memoryData = memoriesList.get(position);
         ((TextView) currentView.findViewById(R.id.textViewTest)).setText(memoryData.getTitle());
-       setPic(((ImageView) currentView.findViewById(R.id.imageView2)), memoryData.getImagePath());
+        ImageView mImageView=(ImageView) currentView.findViewById(R.id.imageView2);
+        if (memoryData.getImagePath() != null) {
+            setPic((mImageView), memoryData.getImagePath());
+        }else{
+            Drawable defaultImage = context.getResources().getDrawable(R.drawable.cameraicon);
+            mImageView.setImageDrawable(defaultImage);
+        }
 
         return currentView;
     }
@@ -83,27 +90,6 @@ public class MemoryAdapter extends BaseAdapter {
         if (ImagesDataModel.getInstance().getBitmapFromMemCache(mCurrentPhotoPath)==null) {
             BitmapWorkerTask task = new BitmapWorkerTask(mImageView,mCurrentPhotoPath, 200, 200);
             task.execute();
-            // Get the dimensions of the bitmap
-           /* BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-            bmOptions.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-
-            // Determine how much to scale down the image
-            int scaleFactor = 5;
-
-            // Decode the image file into a Bitmap sized to fill the View
-            bmOptions.inJustDecodeBounds = false;
-            bmOptions.inSampleSize = scaleFactor;
-            bmOptions.inPurgeable = true;
-
-            Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-
-            bitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false);
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            // bitmap.compress(Bitmap.CompressFormat.JPEG, 40, bytes);
-
-            mImageView.setImageBitmap(bitmap);
-            addBitmapToMemoryCache (mCurrentPhotoPath, bitmap);*/
         }else{
             mImageView.setImageBitmap(ImagesDataModel.getInstance().getBitmapFromMemCache(mCurrentPhotoPath));
         }

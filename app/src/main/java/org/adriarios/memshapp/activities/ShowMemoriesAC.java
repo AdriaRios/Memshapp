@@ -2,10 +2,12 @@ package org.adriarios.memshapp.activities;
 
 import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.location.Location;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -207,11 +209,20 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                     intent.putExtras(extras);
                     startActivity(intent);
                 }else{
-                    new AlertDialog.Builder(this)
-                            .setTitle("Location unavaiable")
-                            .setPositiveButton("OK", null)
-                            .setMessage("The location must be enabled")
-                            .show();
+                    CharSequence options[] = new CharSequence[]{"Aceptar", "Cancelar"};
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(ShowMemoriesAC.this);
+                    dialog.setTitle("Debes activar la localización para añadir recuerdos.");
+                    dialog.setNegativeButton("Cancelar", null);
+                    dialog.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                            Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(myIntent);
+                            //get gps
+                        }
+                    });
+
+                    dialog.show();
                 }
                 return true;
             default:
