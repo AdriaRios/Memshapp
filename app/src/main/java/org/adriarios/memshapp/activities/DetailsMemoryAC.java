@@ -1,5 +1,9 @@
 package org.adriarios.memshapp.activities;
 
+import android.app.AlertDialog;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
 import android.location.Address;
@@ -10,13 +14,16 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -26,6 +33,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import org.adriarios.memshapp.R;
 import org.adriarios.memshapp.asynctask.BitmapWorkerTask;
+import org.adriarios.memshapp.contentprovider.MemoriesProvider;
 import org.adriarios.memshapp.customComponents.ScrollViewCustom;
 import org.adriarios.memshapp.customComponents.VideoViewCustom;
 
@@ -42,6 +50,10 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     String mDescriptionData;
     Double mLatitude;
     Double mLongitude;
+    int mID;
+
+    //Content resolver reference
+    ContentResolver contentResolver;
 
     //View objetcs
     ScrollViewCustom mScrollView;
@@ -59,20 +71,25 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details_memory);
+        //Init custom menu
+        initCustomMenu();
+
         //Init properties
-        mScrollView= (ScrollViewCustom)findViewById(R.id.scrollViewDetails);
+        mScrollView = (ScrollViewCustom) findViewById(R.id.scrollViewDetails);
         mImage = (ImageView) findViewById(R.id.imageDetails);
         mTitle = (TextView) findViewById(R.id.titleDetails);
         mDescription = (TextView) findViewById(R.id.descDetails);
-        mAddress = (TextView)findViewById(R.id.addressDetails);
-        mVideoView = (VideoViewCustom)findViewById(R.id.videoDetails);
-        mAudioButton = (Button)findViewById(R.id.playAudioButtonDetails);
+        mAddress = (TextView) findViewById(R.id.addressDetails);
+        mVideoView = (VideoViewCustom) findViewById(R.id.videoDetails);
+        mAudioButton = (Button) findViewById(R.id.playAudioButtonDetails);
         mAudioButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 playAudioRecorded();
             }
 
         });
+
+        this.contentResolver = getContentResolver();
 
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -85,13 +102,14 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
 
+        mID = extras.getInt("DETAILS_ID");
         mImagePath = extras.getString("DETAILS_IMAGE_PATH");
-        mTitleData= extras.getString("DETAILS_TITLE");
-        mAudioPath= extras.getString("DETAILS_AUDIO_PATH");
-        mVideoPath= extras.getString("DETAILS_VIDEO_PATH");
-        mDescriptionData= extras.getString("DETAILS_DESCRIPTION");
-        mLatitude= extras.getDouble("DETAILS_LATITUDE");
-        mLongitude= extras.getDouble("DETAILS_LONGITUDE");
+        mTitleData = extras.getString("DETAILS_TITLE");
+        mAudioPath = extras.getString("DETAILS_AUDIO_PATH");
+        mVideoPath = extras.getString("DETAILS_VIDEO_PATH");
+        mDescriptionData = extras.getString("DETAILS_DESCRIPTION");
+        mLatitude = extras.getDouble("DETAILS_LATITUDE");
+        mLongitude = extras.getDouble("DETAILS_LONGITUDE");
 
 
         mTitle.setText(mTitleData);
@@ -99,7 +117,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
 
         initMultimedia();
 
-        BitmapWorkerTask task = new BitmapWorkerTask(mImage,mImagePath,400,150);
+        BitmapWorkerTask task = new BitmapWorkerTask(mImage, mImagePath, 400, 150);
         task.execute();
 
         initMap();
@@ -107,13 +125,39 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
         try {
             List<Address> listAddresses = geocoder.getFromLocation(mLatitude, mLongitude, 1);
-            if(null!=listAddresses&&listAddresses.size()>0){
+            if (null != listAddresses && listAddresses.size() > 0) {
                 String _Location = listAddresses.get(0).getAddressLine(0);
                 mAddress.setText(_Location);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+    }
+
+    private void initCustomMenu() {
+        android.support.v7.app.ActionBar myActionVarSupport = getSupportActionBar();
+        myActionVarSupport.setDisplayShowHomeEnabled(false);
+        myActionVarSupport.setDisplayShowTitleEnabled(false);
+        LayoutInflater mInflater = LayoutInflater.from(this);
+
+        View mCustomView = mInflater.inflate(R.layout.menu_details_memory_inflate, null);
+
+        ImageButton imageButton = (ImageButton) mCustomView
+                .findViewById(R.id.backToMemoriesListFromDetailsView);
+        imageButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(DetailsMemoryAC.this,
+                        ShowMemoriesAC.class);
+
+                startActivity(intent);
+            }
+        });
+
+        myActionVarSupport.setCustomView(mCustomView);
+        myActionVarSupport.setDisplayShowCustomEnabled(true);
 
     }
 
@@ -133,11 +177,11 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     }
 
     private void initMultimedia() {
-        Log.i("DETAILS", "video "+mVideoPath);
-        Log.i ("DETAILS", "audio "+mAudioPath);
-        if (mVideoPath==null){
+        Log.i("DETAILS", "video " + mVideoPath);
+        Log.i("DETAILS", "audio " + mAudioPath);
+        if (mVideoPath == null) {
             mVideoView.setVisibility(View.GONE);
-        }else{
+        } else {
             mVideoView.setVideoURI(Uri.parse(mVideoPath));
             mediaController = new MediaController(this);
             mediaController.setAnchorView(mVideoView);
@@ -147,7 +191,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
 
         }
 
-        if (mAudioPath==null){
+        if (mAudioPath == null) {
             mAudioButton.setVisibility(View.GONE);
         }
     }
@@ -170,18 +214,54 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         return true;
     }
 
+    private void removeMemory(){
+        final int[] rowsDeleted = new int[1];
+        CharSequence colors[] = new CharSequence[]{"Aceptar", "Cancelar"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(DetailsMemoryAC.this);
+        builder.setTitle("Estás seguro que quieres eliminar este recuerdo?");
+        builder.setItems(colors, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int option) {
+                switch (option) {
+                    case 0:
+                        CharSequence toastText;
+                        if (contentResolver.delete(MemoriesProvider.CONTENT_URI, MemoriesProvider.MEMORY_ID + "=" + mID, null) > 0){
+                            toastText="Recuerdo eliminado correctamente";
+                        }else{
+                            toastText="Se ha producido un error al eliminar el recuerdo";
+                        }
+                        Context context = getApplicationContext();
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast toast = Toast.makeText(context, toastText, duration);
+                        toast.show();
+                        returnToShowMemories();
+                        break;
+                    default:
+                }
+            }
+        });
+        builder.show();
+    }
+
+    private void returnToShowMemories() {
+        Intent intent = new Intent(DetailsMemoryAC.this,
+                ShowMemoriesAC.class);
+        startActivity(intent);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.removeMemory) {
+           removeMemory();
+
         }
 
         return super.onOptionsItemSelected(item);
     }
+
 }

@@ -4,7 +4,7 @@
     android:layout_height="50dp"
     >
     <ImageButton
-        android:id="@+id/backToAddMemory"
+        android:id="@+id/backToMemoriesListFromDetailsView"
         android:layout_width="12dp"
         android:layout_height="18dp"
         android:layout_alignParentLeft="true"

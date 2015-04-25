@@ -67,6 +67,10 @@ public class SQLiteDataRepository {
                 values);
     }
 
+    public int delete(String selection) {
+        return this.sqliteDatabase.delete(DatabaseOpenHelper.MEMORY_TABLE_NAME, selection, null);
+    }
+
     /**
      * Release the database resources
      */
@@ -77,6 +81,7 @@ public class SQLiteDataRepository {
             sqliteDatabase = null;
         }
     }
+
 
 
 }

@@ -88,7 +88,6 @@ public class AddMemoryAC extends ActionBarActivity {
         mImageButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 CharSequence colors[] = new CharSequence[]{"Cámara", "Galería"};
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(AddMemoryAC.this);
                 builder.setTitle("Escoge una opción");
                 builder.setItems(colors, new DialogInterface.OnClickListener() {

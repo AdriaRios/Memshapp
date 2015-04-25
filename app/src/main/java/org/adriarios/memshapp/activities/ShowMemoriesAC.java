@@ -63,6 +63,7 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                 Intent intent = new Intent(ShowMemoriesAC.this,
                         DetailsMemoryAC.class);
                 Bundle extras = new Bundle();
+                extras.putInt("DETAILS_ID",memoryList.get(position).getId());
                 extras.putString("DETAILS_IMAGE_PATH",memoryList.get(position).getImagePath());
                 extras.putString("DETAILS_TITLE",memoryList.get(position).getTitle());
                 extras.putString("DETAILS_DESCRIPTION",memoryList.get(position).getText());
@@ -73,9 +74,6 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                 intent.putExtras(extras);
                 startActivity(intent);
 
-                /*Toast.makeText(getApplicationContext(),
-                        memoryList.get(position).getTitle(), Toast.LENGTH_LONG)
-                        .show();*/
             }
         });
     }
@@ -123,7 +121,8 @@ public class ShowMemoriesAC extends ActionBarActivity implements
 
         Cursor coursesListCursor = this.contentResolver.query(
                 MemoriesProvider.CONTENT_URI,
-                new String[]{MemoriesProvider.MEMORY_TITLE,
+                new String[]{MemoriesProvider.MEMORY_ID,
+                        MemoriesProvider.MEMORY_TITLE,
                         MemoriesProvider.MEMORY_TEXT,
                         MemoriesProvider.MEMORY_IMAGE,
                         MemoriesProvider.MEMORY_AUDIO,
@@ -141,7 +140,9 @@ public class ShowMemoriesAC extends ActionBarActivity implements
         memoryList = new ArrayList<MemoryDataVO>();
         if (cursor.moveToFirst()) {
             do {
-
+                int id =  cursor.getInt(
+                        cursor.getColumnIndex(MemoriesProvider.MEMORY_ID)
+                );
                 String memoryTitle = cursor.getString(
                         cursor.getColumnIndex(MemoriesProvider.MEMORY_TITLE)
                 );
@@ -166,7 +167,7 @@ public class ShowMemoriesAC extends ActionBarActivity implements
 
 
                 memoryList.add(
-                        new MemoryDataVO(
+                        new MemoryDataVO(id,
                                 memoryTitle,
                                 memoryDesc,
                                 audioPath,

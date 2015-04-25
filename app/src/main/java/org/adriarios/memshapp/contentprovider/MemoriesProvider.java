@@ -22,6 +22,7 @@ public class MemoriesProvider extends ContentProvider {
     public static final Uri CONTENT_URI = Uri
             .parse("content://org.adriarios.memshapp.sqlite.provider/memories");
 
+    public static final String MEMORY_ID = DatabaseOpenHelper._ID;
     public static final String MEMORY_TITLE = DatabaseOpenHelper.MEMORY_TITLE;
     public static final String MEMORY_TEXT = DatabaseOpenHelper.MEMORY_TEXT;
     public static final String MEMORY_AUDIO = DatabaseOpenHelper.MEMORY_AUDIO;
@@ -92,7 +93,10 @@ public class MemoriesProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+        SQLiteDataRepository memoriesDb = new SQLiteDataRepository(getContext());
+        memoriesDb.openDatabaseForWrite();
+        return (memoriesDb.delete(selection));
+
     }
 
     @Override
