@@ -12,14 +12,13 @@ import java.lang.ref.WeakReference;
 /**
  * Created by Adrian on 23/03/2015.
  */
-public class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
+public class LoadImageMiniWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
     private Integer imageW;
     private Integer imageH;
     private  String mCurrentPhotoPath;
     private final WeakReference<ImageView> imageViewReference;
-    private int data = 0;
 
-    public BitmapWorkerTask(ImageView imageView,String mCurrentPhotoPath, Integer imageW, Integer imageH) {
+    public LoadImageMiniWorkerTask(ImageView imageView, String mCurrentPhotoPath, Integer imageW, Integer imageH) {
         this.imageH = imageH;
         this.imageW = imageW;
         this.mCurrentPhotoPath = mCurrentPhotoPath;
@@ -50,9 +49,6 @@ public class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
         bmOptions.inPurgeable = true;
 
         Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-      //  bitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false);
-        // ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        // bitmap.compress(Bitmap.CompressFormat.JPEG, 40, bytes);
 
         return bitmap;
     }

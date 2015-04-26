@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.adriarios.memshapp.R;
-import org.adriarios.memshapp.asynctask.BitmapWorkerTask;
+import org.adriarios.memshapp.asynctask.LoadImageMiniWorkerTask;
 import org.adriarios.memshapp.models.ImagesDataModel;
 import org.adriarios.memshapp.valueobjects.MemoryDataVO;
 
@@ -99,7 +99,7 @@ public class MemoryAdapter extends BaseAdapter {
         if (memoryData.getImagePath() != null) {
             setPic((mImageView), memoryData.getImagePath());
         } else {
-            Drawable defaultImage = context.getResources().getDrawable(R.drawable.cameraicon);
+            Drawable defaultImage = context.getResources().getDrawable(R.drawable.icon_mem);
             mImageView.setImageDrawable(defaultImage);
         }
 
@@ -108,7 +108,7 @@ public class MemoryAdapter extends BaseAdapter {
 
     private void setPic(ImageView mImageView, String mCurrentPhotoPath) {
         if (ImagesDataModel.getInstance().getBitmapFromMemCache(mCurrentPhotoPath) == null) {
-            BitmapWorkerTask task = new BitmapWorkerTask(mImageView, mCurrentPhotoPath, 200, 200);
+            LoadImageMiniWorkerTask task = new LoadImageMiniWorkerTask(mImageView, mCurrentPhotoPath, 200, 200);
             task.execute();
         } else {
             mImageView.setImageBitmap(ImagesDataModel.getInstance().getBitmapFromMemCache(mCurrentPhotoPath));

@@ -29,10 +29,11 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.adriarios.memshapp.R;
-import org.adriarios.memshapp.asynctask.BitmapWorkerTask;
+import org.adriarios.memshapp.asynctask.LoadImageWorkerTask;
 import org.adriarios.memshapp.contentprovider.MemoriesProvider;
 import org.adriarios.memshapp.customComponents.ScrollViewCustom;
 import org.adriarios.memshapp.customComponents.VideoViewCustom;
+import org.adriarios.memshapp.models.ImagesDataModel;
 
 import java.io.IOException;
 import java.util.List;
@@ -45,6 +46,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     String mVideoPath;
     String mTitleData;
     String mDescriptionData;
+    String mLocation;
     Double mLatitude;
     Double mLongitude;
     int mID;
@@ -77,6 +79,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         mTitle = (TextView) findViewById(R.id.titleDetails);
         mDescription = (TextView) findViewById(R.id.descDetails);
         mAddress = (TextView) findViewById(R.id.addressDetails);
+        mAddress.setVisibility(View.INVISIBLE);
         mVideoView = (VideoViewCustom) findViewById(R.id.videoDetails);
         mAudioButton = (Button) findViewById(R.id.playAudioButtonDetails);
         mAudioButton.setOnClickListener(new View.OnClickListener() {
@@ -110,21 +113,12 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
 
         initMultimedia();
 
-        BitmapWorkerTask task = new BitmapWorkerTask(mImage, mImagePath, 400, 150);
+        LoadImageWorkerTask task = new LoadImageWorkerTask(mImage, mImagePath);
         task.execute();
 
         initMap();
 
-        Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-        try {
-            List<Address> listAddresses = geocoder.getFromLocation(mLatitude, mLongitude, 1);
-            if (null != listAddresses && listAddresses.size() > 0) {
-                String _Location = listAddresses.get(0).getAddressLine(0);
-                mAddress.setText(_Location);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
 
     }
 
@@ -155,23 +149,64 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     }
 
     private void initMap() {
+        setAddress();
         MapFragment mapFragment = (MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         mScrollView.addInterceptScrollView(mapFragment.getView());
     }
 
+    private void setAddress (){
+        // Create a new Thread to load the address
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+                try {
+                    List<Address> listAddresses = geocoder.getFromLocation(mLatitude, mLongitude, 1);
+                    if (null != listAddresses && listAddresses.size() > 0) {
+                        mLocation = listAddresses.get(0).getAddressLine(0);
+
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if ( mLocation != null ) {
+                    // The Activity.runOnUiThred() method runs in the UIThread
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mAddress.setVisibility(View.VISIBLE);
+                            mAddress.setText(mLocation);
+                        }
+                    });
+                }
+
+
+            }
+        }).start(); // Executes the newly created thread
+
+
+
+    }
+
+
+
     @Override
     public void onMapReady(GoogleMap map) {
         // Some buildings have indoor maps. Center the camera over
         // the building, and a floor picker will automatically appear.
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(mLatitude, mLongitude), 18));
+                new LatLng(mLatitude, mLongitude), 16));
     }
 
     private void initMultimedia() {
         if (mImagePath == null){
             mImage.setVisibility(View.GONE);
+        }else{
+            mImage.setImageBitmap(ImagesDataModel.getInstance().getBitmapFromMemCache(mImagePath));
         }
         if (mVideoPath == null) {
             mVideoView.setVisibility(View.GONE);
