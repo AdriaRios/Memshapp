@@ -63,22 +63,42 @@ public class MemoryAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
 
         // The View corresponding to the ListView's row layout
-        View currentView = convertView;
+        View currentView = null;
 
         // If the convertView element is not null, the ListView is asking to
         // recycle the existing View, so there is no need to create the View; just update its content
-        if ( currentView == null ) {
+        if (currentView == null) {
             LayoutInflater inflater = (LayoutInflater) context.
                     getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             currentView = inflater.inflate(R.layout.memory_item, parent, false);
         }
-
+        //Get Memory Data
         MemoryDataVO memoryData = memoriesList.get(position);
+        //Set Mini Icons Visibility
+        ImageView iconMiniImage = (ImageView) currentView.findViewById(R.id.iconMiniImage);
+        if (memoryData.getImagePath()==null){
+            iconMiniImage.setVisibility(View.GONE);
+        }
+        ImageView iconMiniVideo = (ImageView) currentView.findViewById(R.id.iconMiniVideo);
+        if (memoryData.getVideoPath()==null){
+            iconMiniVideo.setVisibility(View.GONE);
+        }
+        ImageView iconMiniAudio = (ImageView) currentView.findViewById(R.id.iconMiniAudio);
+        if (memoryData.getAudioPath()==null){
+            iconMiniAudio.setVisibility(View.GONE);
+        }
+        ImageView iconMiniText = (ImageView) currentView.findViewById(R.id.iconMiniText);
+        if (memoryData.getText()==null||memoryData.getText().length()==0){
+            iconMiniText.setVisibility(View.GONE);
+        }
+        //Set Memory Title
         ((TextView) currentView.findViewById(R.id.textViewTest)).setText(memoryData.getTitle());
-        ImageView mImageView=(ImageView) currentView.findViewById(R.id.imageView2);
+
+        //Set Image
+        ImageView mImageView = (ImageView) currentView.findViewById(R.id.imageView2);
         if (memoryData.getImagePath() != null) {
             setPic((mImageView), memoryData.getImagePath());
-        }else{
+        } else {
             Drawable defaultImage = context.getResources().getDrawable(R.drawable.cameraicon);
             mImageView.setImageDrawable(defaultImage);
         }
@@ -87,10 +107,10 @@ public class MemoryAdapter extends BaseAdapter {
     }
 
     private void setPic(ImageView mImageView, String mCurrentPhotoPath) {
-        if (ImagesDataModel.getInstance().getBitmapFromMemCache(mCurrentPhotoPath)==null) {
-            BitmapWorkerTask task = new BitmapWorkerTask(mImageView,mCurrentPhotoPath, 200, 200);
+        if (ImagesDataModel.getInstance().getBitmapFromMemCache(mCurrentPhotoPath) == null) {
+            BitmapWorkerTask task = new BitmapWorkerTask(mImageView, mCurrentPhotoPath, 200, 200);
             task.execute();
-        }else{
+        } else {
             mImageView.setImageBitmap(ImagesDataModel.getInstance().getBitmapFromMemCache(mCurrentPhotoPath));
         }
     }

@@ -21,11 +21,58 @@
     <ImageView
         android:layout_width="150dp"
         android:layout_height="19dp"
+        android:id="@+id/black_bar"
         android:layout_gravity="center_horizontal"
         android:background="#000"
         android:alpha="0.6"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
+    <ImageView
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:id="@+id/spaceBarRight"
+        android:paddingRight="5dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/spaceTop"
+        android:layout_alignEnd="@+id/black_bar"
+        android:layout_centerHorizontal="true" />
+    <ImageView
+        android:layout_width="16dp"
+        android:layout_height="14dp"
+        android:id="@+id/iconMiniText"
+        android:paddingRight="5dp"
+        android:src="@drawable/icon_text"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/spaceTop"
+        android:layout_alignTop="@+id/imageView2"
+        android:layout_toStartOf="@+id/spaceBarRight" />
+    <ImageView
+        android:layout_width="16dp"
+        android:layout_height="14dp"
+        android:id="@+id/iconMiniAudio"
+        android:paddingRight="5dp"
+        android:src="@drawable/icon_record"
+        android:layout_gravity="center_horizontal"
+        android:layout_alignTop="@+id/imageView2"
+        android:layout_toStartOf="@+id/iconMiniText" />
+    <ImageView
+        android:layout_width="16dp"
+        android:layout_height="14dp"
+        android:id="@+id/iconMiniVideo"
+        android:paddingRight="5dp"
+        android:src="@drawable/icon_video"
+        android:layout_gravity="center_horizontal"
+        android:layout_alignTop="@+id/imageView2"
+        android:layout_toStartOf="@+id/iconMiniAudio" />
+    <ImageView
+        android:layout_width="16dp"
+        android:layout_height="14dp"
+        android:id="@+id/iconMiniImage"
+        android:paddingRight="5dp"
+        android:src="@drawable/icon_photo"
+        android:layout_gravity="center_horizontal"
+        android:layout_alignTop="@+id/imageView2"
+        android:layout_toStartOf="@+id/iconMiniVideo" />
     <TextView
         android:layout_width="150sp"
         android:layout_height="70sp"
