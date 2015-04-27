@@ -28,6 +28,7 @@ import org.adriarios.memshapp.contentprovider.MemoriesProvider;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 
@@ -52,6 +53,7 @@ public class AddMemoryAC extends ActionBarActivity {
     String mCurrentAudioPath = null;
     String mCurrentPhotoPath;
     String mCurrentVideoPath;
+    String mTime;
     Double mLatitude;
     Double mLongitude;
 
@@ -152,6 +154,7 @@ public class AddMemoryAC extends ActionBarActivity {
 
 
     private void startMemoryOnBBDD() {
+        mTime = getTime();
         // Open the database for writing
         ContentResolver contentResolver = getContentResolver();
 
@@ -164,9 +167,30 @@ public class AddMemoryAC extends ActionBarActivity {
         values.put(MemoriesProvider.MEMORY_IMAGE, mCurrentPhotoPath);
         values.put(MemoriesProvider.MEMORY_LATITUDE, mLatitude);
         values.put(MemoriesProvider.MEMORY_LONGITUDE, mLongitude);
+        values.put(MemoriesProvider.MEMORY_DATE, mTime);
 
         // Save the data through the ContentProvider
         contentResolver.insert(MemoriesProvider.CONTENT_URI, values);
+    }
+
+    private String getTime() {
+
+        Calendar c = Calendar.getInstance();
+
+        int day = c.get(Calendar.DAY_OF_MONTH);
+        int month = c.get(Calendar.MONTH)+1;
+        int year = c.get(Calendar.YEAR);
+
+        String date = paddingZero(day) + "/" + paddingZero(month) + "/" + year;
+        return  date;
+    }
+
+    private String paddingZero(int number) {
+        String output = String.valueOf(number);
+        if (number < 10){
+            output = "0"+output;
+        }
+        return output;
     }
 
 

@@ -65,14 +65,15 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                 Intent intent = new Intent(ShowMemoriesAC.this,
                         DetailsMemoryAC.class);
                 Bundle extras = new Bundle();
-                extras.putInt("DETAILS_ID",memoryList.get(position).getId());
-                extras.putString("DETAILS_IMAGE_PATH",memoryList.get(position).getImagePath());
-                extras.putString("DETAILS_TITLE",memoryList.get(position).getTitle());
-                extras.putString("DETAILS_DESCRIPTION",memoryList.get(position).getText());
-                extras.putString("DETAILS_AUDIO_PATH",memoryList.get(position).getAudioPath());
-                extras.putString("DETAILS_VIDEO_PATH",memoryList.get(position).getVideoPath());
-                extras.putDouble("DETAILS_LATITUDE",memoryList.get(position).getLatitude());
-                extras.putDouble("DETAILS_LONGITUDE",memoryList.get(position).getLongitude());
+                extras.putInt("DETAILS_ID", memoryList.get(position).getId());
+                extras.putString("DETAILS_IMAGE_PATH", memoryList.get(position).getImagePath());
+                extras.putString("DETAILS_TITLE", memoryList.get(position).getTitle());
+                extras.putString("DETAILS_DESCRIPTION", memoryList.get(position).getText());
+                extras.putString("DETAILS_AUDIO_PATH", memoryList.get(position).getAudioPath());
+                extras.putString("DETAILS_VIDEO_PATH", memoryList.get(position).getVideoPath());
+                extras.putDouble("DETAILS_LATITUDE", memoryList.get(position).getLatitude());
+                extras.putDouble("DETAILS_LONGITUDE", memoryList.get(position).getLongitude());
+                extras.putString("DETAILS_DATE", memoryList.get(position).getDate());
                 intent.putExtras(extras);
                 startActivity(intent);
 
@@ -98,13 +99,9 @@ public class ShowMemoriesAC extends ActionBarActivity implements
         gridview = (GridView) findViewById(R.id.gridView);
         initCustomMenu();
         buildGoogleApiClient();
-
-
-
-
     }
 
-    private void initCustomMenu(){
+    private void initCustomMenu() {
         android.support.v7.app.ActionBar myActionVarSupport = getSupportActionBar();
         myActionVarSupport.setDisplayShowHomeEnabled(false);
         myActionVarSupport.setDisplayShowTitleEnabled(false);
@@ -130,7 +127,8 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                         MemoriesProvider.MEMORY_AUDIO,
                         MemoriesProvider.MEMORY_VIDEO,
                         MemoriesProvider.MEMORY_LATITUDE,
-                        MemoriesProvider.MEMORY_LONGITUDE
+                        MemoriesProvider.MEMORY_LONGITUDE,
+                        MemoriesProvider.MEMORY_DATE
                 },
                 null,
                 null,
@@ -142,7 +140,7 @@ public class ShowMemoriesAC extends ActionBarActivity implements
         memoryList = new ArrayList<MemoryDataVO>();
         if (cursor.moveToFirst()) {
             do {
-                int id =  cursor.getInt(
+                int id = cursor.getInt(
                         cursor.getColumnIndex(MemoriesProvider.MEMORY_ID)
                 );
                 String memoryTitle = cursor.getString(
@@ -166,6 +164,9 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                 Double longitude = cursor.getDouble(
                         cursor.getColumnIndex(MemoriesProvider.MEMORY_LONGITUDE)
                 );
+                String date = cursor.getString(
+                        cursor.getColumnIndex(MemoriesProvider.MEMORY_DATE)
+                );
 
 
                 memoryList.add(
@@ -176,7 +177,8 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                                 videoPath,
                                 imagePath,
                                 latitude,
-                                longitude));
+                                longitude,
+                                date));
 
             } while (cursor.moveToNext());
         }
@@ -200,15 +202,15 @@ public class ShowMemoriesAC extends ActionBarActivity implements
 
         switch (id) {
             case R.id.addMemory:
-                if (mLastLocation!=null) {
+                if (mLastLocation != null) {
                     Intent intent = new Intent(ShowMemoriesAC.this,
                             AddMemoryAC.class);
                     Bundle extras = new Bundle();
-                    extras.putDouble("EXTRA_LAT",mLastLocation.getLatitude());
-                    extras.putDouble("EXTRA_LON",mLastLocation.getLongitude());
+                    extras.putDouble("EXTRA_LAT", mLastLocation.getLatitude());
+                    extras.putDouble("EXTRA_LON", mLastLocation.getLongitude());
                     intent.putExtras(extras);
                     startActivity(intent);
-                }else{
+                } else {
                     CharSequence options[] = new CharSequence[]{"Aceptar", "Cancelar"};
                     AlertDialog.Builder dialog = new AlertDialog.Builder(ShowMemoriesAC.this);
                     dialog.setTitle("Debes activar la localización para añadir recuerdos.");
@@ -216,7 +218,7 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                     dialog.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                            Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                             startActivity(myIntent);
                             //get gps
                         }
@@ -231,7 +233,9 @@ public class ShowMemoriesAC extends ActionBarActivity implements
 
     }
 
-    /**GOOGLE CONNECTION**/
+    /**
+     * GOOGLE CONNECTION*
+     */
 
     @Override
     protected void onStart() {

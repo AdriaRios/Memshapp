@@ -4,21 +4,26 @@ package org.adriarios.memshapp.valueobjects;
  * Created by Adrian on 22/03/2015.
  */
 public class MemoryDataVO {
+    private int id;
     private String title;
     private String text;
     private String audioPath;
     private String videoPath;
     private String imagePath;
+    private String date;
     private Double latitude;
     private Double longitude;
 
-    public MemoryDataVO(String title,
+    public MemoryDataVO(int id,
+                        String title,
                         String text,
                         String audioPath,
                         String videoPath,
                         String imagePath,
                         Double latitude,
-                        Double longitude) {
+                        Double longitude,
+                        String date) {
+        this.id = id;
         this.title = title;
         this.text = text;
         this.audioPath = audioPath;
@@ -26,7 +31,16 @@ public class MemoryDataVO {
         this.imagePath = imagePath;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.date = date;
 
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -83,6 +97,14 @@ public class MemoryDataVO {
 
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 
 

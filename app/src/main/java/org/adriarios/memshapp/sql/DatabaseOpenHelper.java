@@ -22,6 +22,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public static final String		MEMORY_IMAGE = "image";
     public static final String		MEMORY_LATITUDE = "latitude";
     public static final String		MEMORY_LONGITUDE = "longitude";
+    public static final String		MEMORY_DATE = "date";
 
     // Static variable containing the name of all the table's columns
     static final String[] COLUMNS = {
@@ -32,7 +33,8 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
             MEMORY_VIDEO,
             MEMORY_IMAGE,
             MEMORY_LATITUDE,
-            MEMORY_LONGITUDE
+            MEMORY_LONGITUDE,
+            MEMORY_DATE
     };
 
     // Variable holding the SQL instruction to create a new table
@@ -44,6 +46,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                     MEMORY_AUDIO + " TEXT, " +
                     MEMORY_VIDEO + " TEXT, " +
                     MEMORY_IMAGE + " TEXT, " +
+                    MEMORY_DATE + " TEXT, " +
                     MEMORY_LATITUDE + " REAL, " +
                     MEMORY_LONGITUDE + " REAL)";
     // Public constructor. Delegates the construction to the SQLiteOpenHelper class

@@ -91,6 +91,8 @@ public class MemoryAdapter extends BaseAdapter {
         if (memoryData.getText()==null||memoryData.getText().length()==0){
             iconMiniText.setVisibility(View.GONE);
         }
+        //Set Memory Date
+        ((TextView) currentView.findViewById(R.id.dateText)).setText(memoryData.getDate());
         //Set Memory Title
         ((TextView) currentView.findViewById(R.id.textViewTest)).setText(memoryData.getTitle());
 

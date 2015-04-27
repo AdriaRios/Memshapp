@@ -30,6 +30,7 @@ public class MemoriesProvider extends ContentProvider {
     public static final String MEMORY_IMAGE = DatabaseOpenHelper.MEMORY_IMAGE;
     public static final String MEMORY_LATITUDE = DatabaseOpenHelper.MEMORY_LATITUDE;
     public static final String MEMORY_LONGITUDE = DatabaseOpenHelper.MEMORY_LONGITUDE;
+    public static final String MEMORY_DATE = DatabaseOpenHelper.MEMORY_DATE;
 	/* ================================================================================= */
 
     private static final int ALL_MEMORIES = 1;

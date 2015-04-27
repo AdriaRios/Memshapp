@@ -47,6 +47,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     String mTitleData;
     String mDescriptionData;
     String mLocation;
+    String mDate;
     Double mLatitude;
     Double mLongitude;
     int mID;
@@ -58,6 +59,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     ScrollViewCustom mScrollView;
     ImageView mImage;
     TextView mTitle;
+    TextView mDateBox;
     TextView mDescription;
     TextView mAddress;
     VideoViewCustom mVideoView;
@@ -77,6 +79,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         mScrollView = (ScrollViewCustom) findViewById(R.id.scrollViewDetails);
         mImage = (ImageView) findViewById(R.id.imageDetails);
         mTitle = (TextView) findViewById(R.id.titleDetails);
+        mDateBox = (TextView)findViewById(R.id.dateDetails);
         mDescription = (TextView) findViewById(R.id.descDetails);
         mAddress = (TextView) findViewById(R.id.addressDetails);
         mAddress.setVisibility(View.INVISIBLE);
@@ -106,9 +109,11 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         mDescriptionData = extras.getString("DETAILS_DESCRIPTION");
         mLatitude = extras.getDouble("DETAILS_LATITUDE");
         mLongitude = extras.getDouble("DETAILS_LONGITUDE");
+        mDate = extras.getString("DETAILS_DATE");
 
 
         mTitle.setText(mTitleData);
+        mDateBox.setText(mDate);
         mDescription.setText(mDescriptionData);
 
         initMultimedia();
