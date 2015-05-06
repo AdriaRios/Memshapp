@@ -16,18 +16,25 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ToggleButton;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.location.LocationServices;
+import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 import org.adriarios.memshapp.R;
 import org.adriarios.memshapp.adapter.MemoryAdapter;
 import org.adriarios.memshapp.contentprovider.MemoriesProvider;
 import org.adriarios.memshapp.valueobjects.MemoryDataVO;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +44,8 @@ public class ShowMemoriesAC extends ActionBarActivity implements
     ContentResolver contentResolver;
     List<MemoryDataVO> memoryList;
 
+    ToggleButton showMyMemories;
+    ToggleButton showAllMemories;
     GridView gridview;
     MemoryAdapter memoryAdapter;
 
@@ -52,6 +61,14 @@ public class ShowMemoriesAC extends ActionBarActivity implements
     @Override
     protected void onResume() {
         super.onResume();
+
+        showMyMemories.setChecked(true);
+        showAllMemories.setChecked(false);
+        try {
+            testWebservice();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         getMemories();
         memoryAdapter = new MemoryAdapter(this, memoryList);
         // Set the Adapter for the GridView
@@ -81,6 +98,53 @@ public class ShowMemoriesAC extends ActionBarActivity implements
         });
     }
 
+
+    private void testWebservice() throws IOException {
+        // Create a new Thread to load the address
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    OkHttpClient client = new OkHttpClient();
+
+                    Request request = new Request.Builder()
+                            .url("http://52.11.144.116/services.php?memoriesList")
+                            .build();
+
+                    Response response = client.newCall(request).execute();
+                    String test=response.body().string();
+                    Gson gson = new Gson();
+
+                    LinkedTreeMap responseObject = gson.fromJson(test, LinkedTreeMap.class);
+                    ArrayList<LinkedTreeMap> data = (ArrayList<LinkedTreeMap>) responseObject.get("data");
+
+                    for (int i=0; i < data.size(); i++ ){
+                        String id = (String)data.get(i).get("_id");
+                        String title = (String)data.get(i).get("title");
+                        String text = (String)data.get(i).get("text");
+                    }
+
+                    Log.i ("WS",test);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                        }
+                    });
+
+
+            }
+        }).start(); // Executes the newly created thread
+
+
+    }
     /**
      * Builds a GoogleApiClient. Uses the addApi() method to request the LocationServices API.
      */
@@ -97,6 +161,19 @@ public class ShowMemoriesAC extends ActionBarActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_memories);
         gridview = (GridView) findViewById(R.id.gridView);
+        showMyMemories =(ToggleButton)findViewById(R.id.showMyMemories);
+        showAllMemories =(ToggleButton)findViewById(R.id.showAllMemories);
+        showAllMemories.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(ShowMemoriesAC.this,
+                        MapActivity.class);
+
+                startActivity(intent);
+            }
+        });
         initCustomMenu();
         buildGoogleApiClient();
     }
@@ -105,6 +182,8 @@ public class ShowMemoriesAC extends ActionBarActivity implements
         android.support.v7.app.ActionBar myActionVarSupport = getSupportActionBar();
         myActionVarSupport.setDisplayShowHomeEnabled(false);
         myActionVarSupport.setDisplayShowTitleEnabled(false);
+
+
         LayoutInflater mInflater = LayoutInflater.from(this);
 
         View mCustomView = mInflater.inflate(R.layout.menu_show_memories_inflate, null);

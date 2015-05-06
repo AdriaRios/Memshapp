@@ -1,0 +1,43 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="org.adriarios.memshapp.activities.MapActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/LinearLayout">
+        <ToggleButton
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="New ToggleButton"
+            android:id="@+id/showMyMemoriesMap"
+            android:textOff="SOLO LOS MÍOS"
+            android:textOn="SOLO LOS MÍOS"
+            android:layout_weight="0.5"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <ToggleButton
+            android:layout_width="0dp"
+            android:layout_weight="0.5"
+            android:layout_height="wrap_content"
+            android:text="New ToggleButton"
+            android:textOff="TODOS"
+            android:textOn="TODOS"
+            android:id="@+id/showAllMemoriesMap"
+            android:layout_above="@+id/gridView"
+            android:layout_alignRight="@+id/gridView"
+            android:layout_alignEnd="@+id/gridView" />
+    </LinearLayout>
+
+    <fragment
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="com.google.android.gms.maps.MapFragment"
+        android:id="@+id/mapFragment"
+        android:layout_below="@+id/LinearLayout"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>
