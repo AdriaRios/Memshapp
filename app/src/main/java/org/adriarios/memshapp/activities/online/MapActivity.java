@@ -1,13 +1,11 @@
-package org.adriarios.memshapp.activities;
+package org.adriarios.memshapp.activities.online;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -25,15 +23,18 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
 import org.adriarios.memshapp.R;
+import org.adriarios.memshapp.activities.offline.ShowMemoriesAC;
 import org.adriarios.memshapp.valueobjects.MemoryDataVO;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MapActivity extends ActionBarActivity implements OnMapReadyCallback {
     GoogleMap memoriesMap;
     List<MemoryDataVO> memoryList;
+    HashMap<String, MemoryDataVO> markersPerMemoryMap;
 
     //Visual Elements
     ToggleButton showMyMemories;
@@ -82,6 +83,7 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
     private void testWebservice() throws IOException {
         // Create a new Thread to load the address
         memoryList = new ArrayList<MemoryDataVO>();
+        markersPerMemoryMap = new HashMap<String, MemoryDataVO>();
         new Thread(new Runnable() {
 
             @Override
@@ -104,6 +106,7 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
                         String id = (String)data.get(i).get("_id");
                         String title = (String)data.get(i).get("title");
                         String text = (String)data.get(i).get("text");
+                        String imagePath = (String)data.get(i).get("image_path");
                         Double latitude = Double.parseDouble((String)data.get(i).get("latitude"));
                         Double longitude = Double.parseDouble((String)data.get(i).get("longitude"));
                         String date = (String)data.get(i).get("date");
@@ -114,14 +117,13 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
                                         text,
                                         "",
                                         "",
-                                        "",
+                                        imagePath,
                                         latitude,
                                         longitude,
                                         date));
 
                     }
 
-                    Log.i("WS", test);
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -138,6 +140,7 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
                                     .title(item.getTitle())
                                     .snippet(item.getDate())
                                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_m)));
+                            markersPerMemoryMap.put(marker.getId(),memoryList.get(i));
                         }
 
 
@@ -162,8 +165,22 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
         memoriesMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
-                String id = marker.getId();
-                Toast.makeText(MapActivity.this, marker.getTitle(), Toast.LENGTH_SHORT).show();
+                MemoryDataVO currentMemory = markersPerMemoryMap.get(marker.getId());
+                Intent i = new Intent();
+                Intent intent = new Intent(MapActivity.this,
+                        DetailsOnLineMemoryAC.class);
+                Bundle extras = new Bundle();
+                extras.putInt("DETAILS_ID", currentMemory.getId());
+                extras.putString("DETAILS_IMAGE_PATH", currentMemory.getImagePath());
+                extras.putString("DETAILS_TITLE", currentMemory.getTitle());
+                extras.putString("DETAILS_DESCRIPTION", currentMemory.getText());
+                extras.putString("DETAILS_AUDIO_PATH", currentMemory.getAudioPath());
+                extras.putString("DETAILS_VIDEO_PATH", currentMemory.getVideoPath());
+                extras.putDouble("DETAILS_LATITUDE", currentMemory.getLatitude());
+                extras.putDouble("DETAILS_LONGITUDE", currentMemory.getLongitude());
+                extras.putString("DETAILS_DATE", currentMemory.getDate());
+                intent.putExtras(extras);
+                startActivity(intent);
             }
         });
 

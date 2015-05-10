@@ -23,7 +23,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".activities.AddMemoryAC"
+            android:name=".activities.offline.AddMemoryAC"
             android:configChanges="orientation"
             android:label="@string/app_name"
             android:screenOrientation="portrait" >
@@ -36,7 +36,7 @@
         </provider>
 
         <activity
-            android:name=".activities.ShowMemoriesAC"
+            android:name=".activities.offline.ShowMemoriesAC"
             android:configChanges="orientation"
             android:label="@string/title_activity_memories_list"
             android:screenOrientation="portrait" >
@@ -52,13 +52,13 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name=".activities.RecordAudioAC"
+            android:name=".activities.offline.RecordAudioAC"
             android:configChanges="orientation"
             android:label="@string/title_activity_record_audio_ac"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".activities.DetailsMemoryAC"
+            android:name=".activities.offline.DetailsMemoryAC"
             android:configChanges="orientation"
             android:label="@string/title_activity_details_memory_ac"
             android:screenOrientation="portrait" >
@@ -69,8 +69,12 @@
             android:value="AIzaSyC_v30WBmxsAafAo9z1QzzBCsjFcRejiSw" />
 
         <activity
-            android:name=".activities.MapActivity"
+            android:name=".activities.online.MapActivity"
             android:label="@string/title_activity_map" >
+        </activity>
+        <activity
+            android:name=".activities.online.DetailsOnLineMemoryAC"
+            android:label="@string/title_activity_details_on_line_memory_ac" >
         </activity>
     </application>
 

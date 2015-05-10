@@ -1,4 +1,4 @@
-package org.adriarios.memshapp.activities;
+package org.adriarios.memshapp.activities.offline;
 
 import android.app.AlertDialog;
 import android.content.ContentResolver;

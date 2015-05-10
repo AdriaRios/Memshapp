@@ -1,4 +1,4 @@
-package org.adriarios.memshapp.activities;
+package org.adriarios.memshapp.activities.offline;
 
 import android.content.Intent;
 import android.media.MediaPlayer;

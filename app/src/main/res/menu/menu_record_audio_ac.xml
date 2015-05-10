@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="org.adriarios.memshapp.activities.RecordAudioAC">
+    tools:context="org.adriarios.memshapp.activities.offline.RecordAudioAC">
     <item android:id="@+id/confirmAudioButton"
         android:icon="@drawable/check_icon"
         android:layout_width="20dp"

@@ -1,4 +1,4 @@
-package org.adriarios.memshapp.activities;
+package org.adriarios.memshapp.activities.offline;
 
 import android.app.AlertDialog;
 import android.content.ContentResolver;
@@ -25,6 +25,7 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationServices;
 
 import org.adriarios.memshapp.R;
+import org.adriarios.memshapp.activities.online.MapActivity;
 import org.adriarios.memshapp.adapter.MemoryAdapter;
 import org.adriarios.memshapp.contentprovider.MemoriesProvider;
 import org.adriarios.memshapp.valueobjects.MemoryDataVO;

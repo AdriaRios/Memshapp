@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="org.adriarios.memshapp.activities.ShowMemoriesAC">
+    tools:context="org.adriarios.memshapp.activities.offline.ShowMemoriesAC">
     <item android:id="@+id/addMemory"
         android:icon="@drawable/add_icon"
         android:layout_width="24dp"
