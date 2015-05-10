@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    >
+    <ImageButton
+        android:id="@+id/backToMemoriesListFromDetailsView"
+        android:layout_width="12dp"
+        android:layout_height="18dp"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="0dp"
+        android:src="@drawable/arrow_icon" />
+    <ImageView
+        android:id="@+id/memshapp_logo"
+        android:layout_width="145dp"
+        android:layout_height="35dp"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="30dp"
+        android:src="@drawable/bar_logo" />
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:layout_marginLeft="39dp"
+        android:layout_marginStart="39dp"
+        android:progressTint="#fff"
+        android:layout_toRightOf="@+id/memshapp_logo"
+        android:layout_toEndOf="@+id/memshapp_logo" />
+</RelativeLayout>

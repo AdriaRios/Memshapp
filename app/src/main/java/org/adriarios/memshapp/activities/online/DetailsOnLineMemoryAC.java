@@ -8,26 +8,38 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.MediaController;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 import com.squareup.picasso.Picasso;
 
 import org.adriarios.memshapp.R;
 import org.adriarios.memshapp.customComponents.ScrollViewCustom;
 import org.adriarios.memshapp.customComponents.VideoViewCustom;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 
@@ -35,10 +47,17 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
     //Base Path
     final String BASE_PATH = "http://52.11.144.116/memshapp/";
 
+    //counter
+    int loadedElements = 0;
+    int elementsToLoad = 0;
+
     //Data
-    String mImagePath;
-    String mAudioPath;
-    String mVideoPath;
+    String mImageFilePath;
+    String mAudioFilePath;
+    String mVideoFilePath;
+    String mImageRemotePath;
+    String mAudioRemotePath;
+    String mVideoRemotePath;
     String mTitleData;
     String mDescriptionData;
     String mLocation;
@@ -59,6 +78,7 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
     TextView mAddress;
     VideoViewCustom mVideoView;
     Button mAudioButton;
+    ProgressBar progressBar;
 
     MediaController mediaController;
     MediaPlayer mPlayer = null;
@@ -74,12 +94,14 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
         mScrollView = (ScrollViewCustom) findViewById(R.id.scrollViewDetailsOL);
         mImage = (ImageView) findViewById(R.id.imageDetailsOL);
         mTitle = (TextView) findViewById(R.id.titleDetailsOL);
-        mDateBox = (TextView)findViewById(R.id.dateDetailsOL);
+        mDateBox = (TextView) findViewById(R.id.dateDetailsOL);
         mDescription = (TextView) findViewById(R.id.descDetailsOL);
         mAddress = (TextView) findViewById(R.id.addressDetailsOL);
         mAddress.setVisibility(View.INVISIBLE);
         mVideoView = (VideoViewCustom) findViewById(R.id.videoDetailsOL);
+        mVideoView.setVisibility(View.GONE);
         mAudioButton = (Button) findViewById(R.id.playAudioButtonDetailsOL);
+        mAudioButton.setVisibility(View.GONE);
         mAudioButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 playAudioRecorded();
@@ -90,17 +112,16 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
         this.contentResolver = getContentResolver();
 
 
-
         mVideoView.setDimensions(900, 900);
         //Get Memory Info
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
 
         mID = extras.getInt("DETAILS_ID");
-        mImagePath = extras.getString("DETAILS_IMAGE_PATH");
+        mImageRemotePath = extras.getString("DETAILS_IMAGE_PATH");
         mTitleData = extras.getString("DETAILS_TITLE");
-        mAudioPath = extras.getString("DETAILS_AUDIO_PATH");
-        mVideoPath = extras.getString("DETAILS_VIDEO_PATH");
+        mAudioRemotePath = extras.getString("DETAILS_AUDIO_PATH");
+        mVideoRemotePath = extras.getString("DETAILS_VIDEO_PATH");
         mDescriptionData = extras.getString("DETAILS_DESCRIPTION");
         mLatitude = extras.getDouble("DETAILS_LATITUDE");
         mLongitude = extras.getDouble("DETAILS_LONGITUDE");
@@ -110,25 +131,26 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
         mTitle.setText(mTitleData);
         mDateBox.setText(mDate);
         mDescription.setText(mDescriptionData);
-
-        initMultimedia();
-
-        /*LoadImageWorkerTask task = new LoadImageWorkerTask(mImage, mImagePath);
-        task.execute();*/
-
+        try {
+            initMultimedia();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         initMap();
-
-
-
     }
 
+
     private void initCustomMenu() {
-        /*android.support.v7.app.ActionBar myActionVarSupport = getSupportActionBar();
+        android.support.v7.app.ActionBar myActionVarSupport = getSupportActionBar();
         myActionVarSupport.setDisplayShowHomeEnabled(false);
         myActionVarSupport.setDisplayShowTitleEnabled(false);
         LayoutInflater mInflater = LayoutInflater.from(this);
 
-        View mCustomView = mInflater.inflate(R.layout.menu_details_memory_inflate, null);
+        View mCustomView = mInflater.inflate(R.layout.menu_details_memory_online_inflate, null);
+
+        progressBar = (ProgressBar) mCustomView.findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
+        progressBar.getIndeterminateDrawable().setColorFilter(0xFFFFFFFF, android.graphics.PorterDuff.Mode.MULTIPLY);
 
         ImageButton imageButton = (ImageButton) mCustomView
                 .findViewById(R.id.backToMemoriesListFromDetailsView);
@@ -136,15 +158,15 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
 
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(DetailsMemoryAC.this,
-                        ShowMemoriesAC.class);
+                Intent intent = new Intent(DetailsOnLineMemoryAC.this,
+                        MapActivity.class);
 
                 startActivity(intent);
             }
         });
 
         myActionVarSupport.setCustomView(mCustomView);
-        myActionVarSupport.setDisplayShowCustomEnabled(true);*/
+        myActionVarSupport.setDisplayShowCustomEnabled(true);
 
     }
 
@@ -156,7 +178,7 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
         mScrollView.addInterceptScrollView(mapFragment.getView());
     }
 
-    private void setAddress (){
+    private void setAddress() {
         // Create a new Thread to load the address
         new Thread(new Runnable() {
 
@@ -172,7 +194,7 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                if ( mLocation != null ) {
+                if (mLocation != null) {
                     // The Activity.runOnUiThred() method runs in the UIThread
                     runOnUiThread(new Runnable() {
 
@@ -189,9 +211,7 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
         }).start(); // Executes the newly created thread
 
 
-
     }
-
 
 
     @Override
@@ -202,35 +222,158 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
                 new LatLng(mLatitude, mLongitude), 16));
     }
 
-    private void initMultimedia() {
-        if (mImagePath == null || mImagePath.isEmpty()){
+    private void initMultimedia() throws IOException {
+        if (mImageRemotePath == null || mImageRemotePath.isEmpty()) {
             mImage.setVisibility(View.GONE);
-        }else{
-            Picasso.with(this).load(BASE_PATH + mImagePath).into(mImage);
+        } else {
+            Picasso.with(this).load(BASE_PATH + mImageRemotePath).into(mImage);
         }
 
 
-        if (mVideoPath == null || mVideoPath.isEmpty()) {
+        if (mVideoRemotePath == null || mVideoRemotePath.isEmpty()) {
             mVideoView.setVisibility(View.GONE);
         } else {
-            mVideoView.setVideoURI(Uri.parse(mVideoPath));
-            mediaController = new MediaController(this);
-            mediaController.setAnchorView(mVideoView);
-            mVideoView.setMediaController(mediaController);
-            mVideoView.seekTo(1);
-
-
+            elementsToLoad++;
+            downloadVideo();
         }
 
-        if (mAudioPath == null || mAudioPath.isEmpty()) {
+        if (mAudioRemotePath == null || mAudioRemotePath.isEmpty()) {
             mAudioButton.setVisibility(View.GONE);
+        } else {
+            elementsToLoad++;
+            downloadAudio();
+        }
+
+        if (elementsToLoad > 0){
+            progressBar.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void downloadVideo() throws IOException {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int count;
+                    File file = null;
+                    File outputDir = DetailsOnLineMemoryAC.this.getCacheDir(); // context being the Activity pointer
+                    file = File.createTempFile("test", ".mp4", outputDir);
+                    mVideoFilePath = file.getAbsolutePath();
+
+                    OkHttpClient client = new OkHttpClient();
+                    Request request = new Request.Builder().url(BASE_PATH + mVideoRemotePath).build();
+                    Response response = null;
+                    response = client.newCall(request).execute();
+                    InputStream is = null;
+                    is = response.body().byteStream();
+                    BufferedInputStream input = new BufferedInputStream(is);
+                    OutputStream output = new FileOutputStream(file);
+
+                    byte[] data = new byte[1024];
+                    long total = 0;
+
+                    while ((count = input.read(data)) != -1) {
+                        total += count;
+                        output.write(data, 0, count);
+                    }
+                    output.flush();
+                    output.close();
+                    input.close();
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            checkHideProgressBar();
+                            mVideoView.setVisibility(View.VISIBLE);
+                            mVideoView.setVideoURI(Uri.parse(mVideoFilePath));
+                            mediaController = new MediaController(DetailsOnLineMemoryAC.this);
+                            mediaController.setAnchorView(mVideoView);
+                            mVideoView.setMediaController(mediaController);
+                            mVideoView.seekTo(1);
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Error de conexión",
+                                    Toast.LENGTH_LONG).show();
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    });
+                }
+
+            }
+        }).start(); // Executes the newly created thread
+    }
+
+    private void downloadAudio() throws IOException {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int count;
+                    File file = null;
+                    File outputDir = DetailsOnLineMemoryAC.this.getCacheDir(); // context being the Activity pointer
+                    file = File.createTempFile("test", ".3gp", outputDir);
+                    mAudioFilePath = file.getAbsolutePath();
+
+                    OkHttpClient client = new OkHttpClient();
+                    Request request = new Request.Builder().url(BASE_PATH + mAudioRemotePath).build();
+                    Response response = null;
+                    response = client.newCall(request).execute();
+                    InputStream is = null;
+                    is = response.body().byteStream();
+                    BufferedInputStream input = new BufferedInputStream(is);
+                    OutputStream output = new FileOutputStream(file);
+
+                    byte[] data = new byte[1024];
+                    long total = 0;
+
+                    while ((count = input.read(data)) != -1) {
+                        total += count;
+                        output.write(data, 0, count);
+                    }
+                    output.flush();
+                    output.close();
+                    input.close();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            checkHideProgressBar();
+                            mAudioButton.setVisibility(View.VISIBLE);
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Error de conexión",
+                                    Toast.LENGTH_LONG).show();
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    });
+
+                }
+
+
+            }
+        }).start(); // Executes the newly created thread
+    }
+
+    private void checkHideProgressBar () {
+        loadedElements++;
+        if (loadedElements == elementsToLoad){
+            progressBar.setVisibility(View.GONE);
         }
     }
 
     private void playAudioRecorded() {
         mPlayer = new MediaPlayer();
         try {
-            mPlayer.setDataSource(mAudioPath);
+            mPlayer.setDataSource(mAudioFilePath);
             mPlayer.prepare();
             mPlayer.start();
         } catch (IOException e) {
@@ -241,23 +384,13 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_details_memory, menu);
+        getMenuInflater().inflate(R.menu.menu_details_on_line_memory_ac, menu);
         return true;
     }
 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        //noinspection SimplifiableIfStatement
-        //if (id == R.id.removeMemory) {
-            //removeMemory();
-
-        //}
-
         return super.onOptionsItemSelected(item);
     }
 }

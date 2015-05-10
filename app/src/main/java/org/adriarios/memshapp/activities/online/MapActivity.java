@@ -3,9 +3,11 @@ package org.adriarios.memshapp.activities.online;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ToggleButton;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -45,6 +47,8 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        initCustomMenu();
+
         showMyMemories =(ToggleButton)findViewById(R.id.showMyMemoriesMap);
         showMyMemories.setOnClickListener(new View.OnClickListener()
         {
@@ -58,6 +62,32 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
             }
         });
         showAllMemories =(ToggleButton)findViewById(R.id.showAllMemoriesMap);
+
+    }
+
+    private void initCustomMenu() {
+        android.support.v7.app.ActionBar myActionVarSupport = getSupportActionBar();
+        myActionVarSupport.setDisplayShowHomeEnabled(false);
+        myActionVarSupport.setDisplayShowTitleEnabled(false);
+        LayoutInflater mInflater = LayoutInflater.from(this);
+
+        View mCustomView = mInflater.inflate(R.layout.menu_details_memory_inflate, null);
+
+        ImageButton imageButton = (ImageButton) mCustomView
+                .findViewById(R.id.backToMemoriesListFromDetailsView);
+        imageButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MapActivity.this,
+                        ShowMemoriesAC.class);
+
+                startActivity(intent);
+            }
+        });
+
+        myActionVarSupport.setCustomView(mCustomView);
+        myActionVarSupport.setDisplayShowCustomEnabled(true);
 
     }
 
@@ -80,7 +110,7 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
         return true;
     }
 
-    private void testWebservice() throws IOException {
+    private void getRemoteMemories() throws IOException {
         // Create a new Thread to load the address
         memoryList = new ArrayList<MemoryDataVO>();
         markersPerMemoryMap = new HashMap<String, MemoryDataVO>();
@@ -107,6 +137,8 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
                         String title = (String)data.get(i).get("title");
                         String text = (String)data.get(i).get("text");
                         String imagePath = (String)data.get(i).get("image_path");
+                        String audioPath = (String)data.get(i).get("audio_path");
+                        String videoPath = (String)data.get(i).get("video_path");
                         Double latitude = Double.parseDouble((String)data.get(i).get("latitude"));
                         Double longitude = Double.parseDouble((String)data.get(i).get("longitude"));
                         String date = (String)data.get(i).get("date");
@@ -115,8 +147,8 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
                                 new MemoryDataVO(Integer.valueOf(id),
                                         title,
                                         text,
-                                        "",
-                                        "",
+                                        audioPath,
+                                        videoPath,
                                         imagePath,
                                         latitude,
                                         longitude,
@@ -139,7 +171,8 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
                                     .position(new LatLng(item.getLatitude(), item.getLongitude()))
                                     .title(item.getTitle())
                                     .snippet(item.getDate())
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_m)));
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.map_pointer)));
+
                             markersPerMemoryMap.put(marker.getId(),memoryList.get(i));
                         }
 
@@ -186,7 +219,7 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
 
 
         try {
-            testWebservice();
+            getRemoteMemories();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -195,16 +228,6 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
     }
 
