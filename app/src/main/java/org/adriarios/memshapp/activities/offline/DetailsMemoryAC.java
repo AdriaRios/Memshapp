@@ -11,6 +11,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +28,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
 
 import org.adriarios.memshapp.R;
 import org.adriarios.memshapp.asynctask.LoadImageWorkerTask;
@@ -35,6 +42,7 @@ import org.adriarios.memshapp.customComponents.ScrollViewCustom;
 import org.adriarios.memshapp.customComponents.VideoViewCustom;
 import org.adriarios.memshapp.models.ImagesDataModel;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -207,11 +215,77 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
                 new LatLng(mLatitude, mLongitude), 16));
     }
 
+    public void run() throws Exception {
+        MediaType MEDIA_TYPE_JPG=MediaType.parse("image/jpg");
+        MediaType MEDIA_TYPE_3GP=MediaType.parse("audio/3gpp");
+        MediaType MEDIA_TYPE_MP4=MediaType.parse("video/mp4");
+        final OkHttpClient client = new OkHttpClient();
+
+        File file = new File(mImagePath);
+        final RequestBody body = RequestBody.create(MEDIA_TYPE_JPG, file);
+
+        File file2 = new File(mAudioPath);
+        final RequestBody body2 = RequestBody.create(MEDIA_TYPE_3GP, file2);
+
+        File file3 = new File(mVideoPath);
+        final RequestBody body3 = RequestBody.create(MEDIA_TYPE_MP4, file3);
+
+
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    RequestBody requestBody = new MultipartBuilder().type(MultipartBuilder.FORM)
+                            .addFormDataPart("test", "Hello!!")
+                            .addFormDataPart("uploadedfile1", "uploadedfile1.jpg",body)
+                            .addFormDataPart("uploadedfile2", "uploadedfile2.3gp",body2)
+                            .addFormDataPart("uploadedfile3", "uploadedfile3.mp4",body3)
+                            .build();
+
+                    Request request = new Request.Builder().url("http://52.11.144.116/uploadMemory.php").post(requestBody).build();
+
+                    Response response = client.newCall(request).execute();
+                    if (!response.isSuccessful()) {
+                        throw new IOException("Unexpected code " + response);
+                    }
+
+                    Log.d("Response", response.body().string());
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+
+
+
+                    }
+                });
+
+
+            }
+        }).start(); // Executes the newly created thread
+
+
+
+    }
+
     private void initMultimedia() {
         if (mImagePath == null){
             mImage.setVisibility(View.GONE);
         }else{
             mImage.setImageBitmap(ImagesDataModel.getInstance().getBitmapFromMemCache(mImagePath));
+
+            try {
+                run();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         if (mVideoPath == null) {
             mVideoView.setVisibility(View.GONE);
