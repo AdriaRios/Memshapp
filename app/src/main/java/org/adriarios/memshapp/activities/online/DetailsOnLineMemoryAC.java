@@ -45,7 +45,7 @@ import java.util.Locale;
 
 public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapReadyCallback {
     //Base Path
-    final String BASE_PATH = "http://52.11.144.116/memshapp/";
+    final String BASE_PATH = "http://52.11.144.116/uploads/";
 
     //counter
     int loadedElements = 0;

@@ -28,6 +28,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.gson.Gson;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.MultipartBuilder;
 import com.squareup.okhttp.OkHttpClient;
@@ -41,9 +42,11 @@ import org.adriarios.memshapp.contentprovider.MemoriesProvider;
 import org.adriarios.memshapp.customComponents.ScrollViewCustom;
 import org.adriarios.memshapp.customComponents.VideoViewCustom;
 import org.adriarios.memshapp.models.ImagesDataModel;
+import org.adriarios.memshapp.valueobjects.MemoryDataOnLineVO;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Locale;
 
@@ -87,7 +90,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         mScrollView = (ScrollViewCustom) findViewById(R.id.scrollViewDetails);
         mImage = (ImageView) findViewById(R.id.imageDetails);
         mTitle = (TextView) findViewById(R.id.titleDetails);
-        mDateBox = (TextView)findViewById(R.id.dateDetails);
+        mDateBox = (TextView) findViewById(R.id.dateDetails);
         mDescription = (TextView) findViewById(R.id.descDetails);
         mAddress = (TextView) findViewById(R.id.addressDetails);
         mAddress.setVisibility(View.INVISIBLE);
@@ -101,7 +104,6 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         });
 
         this.contentResolver = getContentResolver();
-
 
 
         mVideoView.setDimensions(900, 900);
@@ -130,7 +132,6 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         task.execute();
 
         initMap();
-
 
 
     }
@@ -169,7 +170,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         mScrollView.addInterceptScrollView(mapFragment.getView());
     }
 
-    private void setAddress (){
+    private void setAddress() {
         // Create a new Thread to load the address
         new Thread(new Runnable() {
 
@@ -185,7 +186,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                if ( mLocation != null ) {
+                if (mLocation != null) {
                     // The Activity.runOnUiThred() method runs in the UIThread
                     runOnUiThread(new Runnable() {
 
@@ -202,9 +203,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         }).start(); // Executes the newly created thread
 
 
-
     }
-
 
 
     @Override
@@ -216,19 +215,25 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     }
 
     public void run() throws Exception {
-        MediaType MEDIA_TYPE_JPG=MediaType.parse("image/jpg");
-        MediaType MEDIA_TYPE_3GP=MediaType.parse("audio/3gpp");
-        MediaType MEDIA_TYPE_MP4=MediaType.parse("video/mp4");
+        final MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
+        final MediaType MEDIA_TYPE_3GP = MediaType.parse("audio/3gpp");
+        final MediaType MEDIA_TYPE_MP4 = MediaType.parse("video/mp4");
         final OkHttpClient client = new OkHttpClient();
 
-        File file = new File(mImagePath);
-        final RequestBody body = RequestBody.create(MEDIA_TYPE_JPG, file);
 
-        File file2 = new File(mAudioPath);
-        final RequestBody body2 = RequestBody.create(MEDIA_TYPE_3GP, file2);
 
-        File file3 = new File(mVideoPath);
-        final RequestBody body3 = RequestBody.create(MEDIA_TYPE_MP4, file3);
+        SecureRandom random = new SecureRandom();
+        final long memoryCode = Math.abs(random.nextLong());
+
+
+        final MemoryDataOnLineVO currentMemory = new MemoryDataOnLineVO(mID, mTitleData, mDescriptionData, mAudioPath,
+                mVideoPath, mImagePath, mLatitude, mLongitude, mDate, "", String.valueOf(memoryCode));
+
+        Gson gson = new Gson();
+
+        // convert java object to JSON format,
+        // and returned as JSON formatted string
+        final String currentMemoryJSON = gson.toJson(currentMemory);
 
 
         new Thread(new Runnable() {
@@ -236,12 +241,36 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
             @Override
             public void run() {
                 try {
-                    RequestBody requestBody = new MultipartBuilder().type(MultipartBuilder.FORM)
-                            .addFormDataPart("test", "Hello!!")
-                            .addFormDataPart("uploadedfile1", "uploadedfile1.jpg",body)
-                            .addFormDataPart("uploadedfile2", "uploadedfile2.3gp",body2)
-                            .addFormDataPart("uploadedfile3", "uploadedfile3.mp4",body3)
-                            .build();
+                    RequestBody body = null;
+                    RequestBody body2 = null;
+                    RequestBody body3 = null;
+
+                    MultipartBuilder multipartBuilder = new MultipartBuilder();
+                    multipartBuilder.type(MultipartBuilder.FORM);
+                    multipartBuilder.addFormDataPart("currentMemory", currentMemoryJSON);
+
+                    if (mImagePath != null) {
+                        File file = new File(mImagePath);
+                        body = RequestBody.create(MEDIA_TYPE_JPG, file);
+                        multipartBuilder.addFormDataPart("uploadedfile1", memoryCode + "image.jpg", body);
+                    }
+
+                    if (mAudioPath != null) {
+                        File file2 = new File(mAudioPath);
+                        body2 = RequestBody.create(MEDIA_TYPE_3GP, file2);
+                        multipartBuilder.addFormDataPart("uploadedfile2", memoryCode + "audio.3gp", body2);
+                    }
+
+                    if (mVideoPath != null) {
+                        File file3 = new File(mVideoPath);
+                        body3 = RequestBody.create(MEDIA_TYPE_MP4, file3);
+                        multipartBuilder.addFormDataPart("uploadedfile3", memoryCode + "video.mp4", body3);
+                    }
+
+
+
+
+                    RequestBody requestBody = multipartBuilder.build();
 
                     Request request = new Request.Builder().url("http://52.11.144.116/uploadMemory.php").post(requestBody).build();
 
@@ -263,7 +292,6 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
                     public void run() {
 
 
-
                     }
                 });
 
@@ -272,13 +300,12 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         }).start(); // Executes the newly created thread
 
 
-
     }
 
     private void initMultimedia() {
-        if (mImagePath == null){
+        if (mImagePath == null) {
             mImage.setVisibility(View.GONE);
-        }else{
+        } else {
             mImage.setImageBitmap(ImagesDataModel.getInstance().getBitmapFromMemCache(mImagePath));
 
             try {
@@ -322,7 +349,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         return true;
     }
 
-    private void removeMemory(){
+    private void removeMemory() {
         AlertDialog.Builder dialog = new AlertDialog.Builder(DetailsMemoryAC.this);
         dialog.setTitle("Estás seguro que quieres eliminar este recuerdo?");
         dialog.setNegativeButton("Cancelar", null);
@@ -330,10 +357,10 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
             @Override
             public void onClick(DialogInterface paramDialogInterface, int paramInt) {
                 CharSequence toastText;
-                if (contentResolver.delete(MemoriesProvider.CONTENT_URI, MemoriesProvider.MEMORY_ID + "=" + mID, null) > 0){
-                    toastText="Recuerdo eliminado correctamente";
-                }else{
-                    toastText="Se ha producido un error al eliminar el recuerdo";
+                if (contentResolver.delete(MemoriesProvider.CONTENT_URI, MemoriesProvider.MEMORY_ID + "=" + mID, null) > 0) {
+                    toastText = "Recuerdo eliminado correctamente";
+                } else {
+                    toastText = "Se ha producido un error al eliminar el recuerdo";
                 }
                 Context context = getApplicationContext();
                 int duration = Toast.LENGTH_SHORT;
@@ -360,7 +387,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         int id = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (id == R.id.removeMemory) {
-           removeMemory();
+            removeMemory();
 
         }
 
