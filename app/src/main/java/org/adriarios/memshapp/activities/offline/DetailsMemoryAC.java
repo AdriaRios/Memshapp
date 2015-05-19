@@ -214,105 +214,12 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
                 new LatLng(mLatitude, mLongitude), 16));
     }
 
-    public void run() throws Exception {
-        final MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
-        final MediaType MEDIA_TYPE_3GP = MediaType.parse("audio/3gpp");
-        final MediaType MEDIA_TYPE_MP4 = MediaType.parse("video/mp4");
-        final OkHttpClient client = new OkHttpClient();
-
-
-
-        SecureRandom random = new SecureRandom();
-        final long memoryCode = Math.abs(random.nextLong());
-
-
-        final MemoryDataOnLineVO currentMemory = new MemoryDataOnLineVO(mID, mTitleData, mDescriptionData, mAudioPath,
-                mVideoPath, mImagePath, mLatitude, mLongitude, mDate, "", String.valueOf(memoryCode));
-
-        Gson gson = new Gson();
-
-        // convert java object to JSON format,
-        // and returned as JSON formatted string
-        final String currentMemoryJSON = gson.toJson(currentMemory);
-
-
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    RequestBody body = null;
-                    RequestBody body2 = null;
-                    RequestBody body3 = null;
-
-                    MultipartBuilder multipartBuilder = new MultipartBuilder();
-                    multipartBuilder.type(MultipartBuilder.FORM);
-                    multipartBuilder.addFormDataPart("currentMemory", currentMemoryJSON);
-
-                    if (mImagePath != null) {
-                        File file = new File(mImagePath);
-                        body = RequestBody.create(MEDIA_TYPE_JPG, file);
-                        multipartBuilder.addFormDataPart("uploadedfile1", memoryCode + "image.jpg", body);
-                    }
-
-                    if (mAudioPath != null) {
-                        File file2 = new File(mAudioPath);
-                        body2 = RequestBody.create(MEDIA_TYPE_3GP, file2);
-                        multipartBuilder.addFormDataPart("uploadedfile2", memoryCode + "audio.3gp", body2);
-                    }
-
-                    if (mVideoPath != null) {
-                        File file3 = new File(mVideoPath);
-                        body3 = RequestBody.create(MEDIA_TYPE_MP4, file3);
-                        multipartBuilder.addFormDataPart("uploadedfile3", memoryCode + "video.mp4", body3);
-                    }
-
-
-
-
-                    RequestBody requestBody = multipartBuilder.build();
-
-                    Request request = new Request.Builder().url("http://52.11.144.116/uploadMemory.php").post(requestBody).build();
-
-                    Response response = client.newCall(request).execute();
-                    if (!response.isSuccessful()) {
-                        throw new IOException("Unexpected code " + response);
-                    }
-
-                    Log.d("Response", response.body().string());
-
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-
-
-                    }
-                });
-
-
-            }
-        }).start(); // Executes the newly created thread
-
-
-    }
 
     private void initMultimedia() {
         if (mImagePath == null) {
             mImage.setVisibility(View.GONE);
         } else {
             mImage.setImageBitmap(ImagesDataModel.getInstance().getBitmapFromMemCache(mImagePath));
-
-            try {
-                run();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
         if (mVideoPath == null) {
             mVideoView.setVisibility(View.GONE);
@@ -388,10 +295,129 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         //noinspection SimplifiableIfStatement
         if (id == R.id.removeMemory) {
             removeMemory();
-
+        } else if (id == R.id.synchronizeMemory) {
+            confirmSynchronize();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void confirmSynchronize() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(DetailsMemoryAC.this);
+        dialog.setTitle("Estás seguro que quieres sincronizar este recuerdo?");
+        dialog.setNegativeButton("Cancelar", null);
+        dialog.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                try {
+                    synchronizeMemory();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        dialog.show();
+    }
+
+    public void synchronizeMemory() throws Exception {
+        final MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
+        final MediaType MEDIA_TYPE_3GP = MediaType.parse("audio/3gpp");
+        final MediaType MEDIA_TYPE_MP4 = MediaType.parse("video/mp4");
+        final OkHttpClient client = new OkHttpClient();
+
+
+        SecureRandom random = new SecureRandom();
+        final long memoryCode = Math.abs(random.nextLong());
+
+
+        final MemoryDataOnLineVO currentMemory = new MemoryDataOnLineVO(mID, mTitleData, mDescriptionData, mAudioPath,
+                mVideoPath, mImagePath, mLatitude, mLongitude, mDate, "", String.valueOf(memoryCode));
+
+        Gson gson = new Gson();
+
+        // convert java object to JSON format,
+        // and returned as JSON formatted string
+        final String currentMemoryJSON = gson.toJson(currentMemory);
+
+
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    RequestBody body = null;
+                    RequestBody body2 = null;
+                    RequestBody body3 = null;
+
+                    MultipartBuilder multipartBuilder = new MultipartBuilder();
+                    multipartBuilder.type(MultipartBuilder.FORM);
+                    multipartBuilder.addFormDataPart("currentMemory", currentMemoryJSON);
+
+                    if (mImagePath != null) {
+                        File file = new File(mImagePath);
+                        body = RequestBody.create(MEDIA_TYPE_JPG, file);
+                        multipartBuilder.addFormDataPart("uploadedfile1", memoryCode + "image.jpg", body);
+                    }
+
+                    if (mAudioPath != null) {
+                        File file2 = new File(mAudioPath);
+                        body2 = RequestBody.create(MEDIA_TYPE_3GP, file2);
+                        multipartBuilder.addFormDataPart("uploadedfile2", memoryCode + "audio.3gp", body2);
+                    }
+
+                    if (mVideoPath != null) {
+                        File file3 = new File(mVideoPath);
+                        body3 = RequestBody.create(MEDIA_TYPE_MP4, file3);
+                        multipartBuilder.addFormDataPart("uploadedfile3", memoryCode + "video.mp4", body3);
+                    }
+
+
+                    RequestBody requestBody = multipartBuilder.build();
+
+                    Request request = new Request.Builder().url("http://52.11.144.116/uploadMemory.php").post(requestBody).build();
+
+                    Response response = client.newCall(request).execute();
+                    if (!response.isSuccessful()) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast toast = Toast.makeText(DetailsMemoryAC.this, "Error al sincronizar", Toast.LENGTH_SHORT);
+                                toast.show();
+                            }
+                        });
+                        throw new IOException("Unexpected code " + response);
+                    } else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast toast = Toast.makeText(DetailsMemoryAC.this, "Recuerdo sincronizado correctamente", Toast.LENGTH_SHORT);
+                                toast.show();
+                            }
+                        });
+                    }
+                    Log.d("Response", response.body().string());
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast toast = Toast.makeText(DetailsMemoryAC.this, "Error al sincronizar", Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
+                    });
+
+                }
+
+
+
+
+            }
+        }).start(); // Executes the newly created thread
+
+
     }
 
 }

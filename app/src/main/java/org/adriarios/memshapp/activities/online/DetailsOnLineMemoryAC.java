@@ -29,6 +29,7 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Callback;
 
 import org.adriarios.memshapp.R;
 import org.adriarios.memshapp.customComponents.ScrollViewCustom;
@@ -226,7 +227,19 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
         if (mImageRemotePath == null || mImageRemotePath.isEmpty()) {
             mImage.setVisibility(View.GONE);
         } else {
-            Picasso.with(this).load(BASE_PATH + mImageRemotePath).into(mImage);
+            elementsToLoad++;
+            Picasso.with(this)
+                    .load(BASE_PATH + mImageRemotePath).into(mImage, new Callback() {
+                @Override
+                public void onSuccess() {
+                    checkHideProgressBar();
+                }
+
+                @Override
+                public void onError() {
+                    checkHideProgressBar();
+                }
+            });
         }
 
 
