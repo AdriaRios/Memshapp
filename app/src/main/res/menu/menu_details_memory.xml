@@ -7,6 +7,7 @@
         android:layout_width="27dp"
         android:layout_height="27dp"
         app:showAsAction="always"
+        android:actionViewClass="android.widget.ImageButton"
         android:title="Synchronize" />
     <item android:id="@+id/removeMemory"
         android:icon="@drawable/delete_icon"

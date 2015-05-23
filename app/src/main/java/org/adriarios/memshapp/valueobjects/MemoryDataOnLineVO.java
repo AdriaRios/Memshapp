@@ -5,14 +5,13 @@ package org.adriarios.memshapp.valueobjects;
  */
 public class MemoryDataOnLineVO extends MemoryDataVO {
     private String memoryOwner;
-    private String memoryCode;
+
     public MemoryDataOnLineVO(int id, String title, String text, String audioPath,
                               String videoPath, String imagePath, Double latitude,
                               Double longitude, String date, String memoryOwner, String memoryCode) {
-        super(id, title, text, audioPath, videoPath, imagePath, latitude, longitude, date);
+        super(id, title, text, audioPath, videoPath, imagePath, latitude, longitude, date, memoryCode);
 
         this.memoryOwner = memoryOwner;
-        this.memoryCode = memoryCode;
 
     }
 
@@ -24,11 +23,4 @@ public class MemoryDataOnLineVO extends MemoryDataVO {
         this.memoryOwner = memoryOwner;
     }
 
-    public String getMemoryCode() {
-        return memoryCode;
-    }
-
-    public void setMemoryCode(String memoryCode) {
-        this.memoryCode = memoryCode;
-    }
 }

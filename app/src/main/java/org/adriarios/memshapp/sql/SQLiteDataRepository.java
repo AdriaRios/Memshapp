@@ -60,7 +60,6 @@ public class SQLiteDataRepository {
     }
 
     public long insert(ContentValues values) {
-
         return this.sqliteDatabase.insert(
                 DatabaseOpenHelper.MEMORY_TABLE_NAME,
                 null,
@@ -69,6 +68,10 @@ public class SQLiteDataRepository {
 
     public int delete(String selection) {
         return this.sqliteDatabase.delete(DatabaseOpenHelper.MEMORY_TABLE_NAME, selection, null);
+    }
+
+    public int update(ContentValues values, String selection) {
+        return this.sqliteDatabase.update(DatabaseOpenHelper.MEMORY_TABLE_NAME, values, selection, null);
     }
 
     /**

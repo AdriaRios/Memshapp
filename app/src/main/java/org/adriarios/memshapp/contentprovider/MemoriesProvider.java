@@ -31,6 +31,7 @@ public class MemoriesProvider extends ContentProvider {
     public static final String MEMORY_LATITUDE = DatabaseOpenHelper.MEMORY_LATITUDE;
     public static final String MEMORY_LONGITUDE = DatabaseOpenHelper.MEMORY_LONGITUDE;
     public static final String MEMORY_DATE = DatabaseOpenHelper.MEMORY_DATE;
+    public static final String MEMORY_CODE = DatabaseOpenHelper.MEMORY_CODE;
 	/* ================================================================================= */
 
     private static final int ALL_MEMORIES = 1;
@@ -92,6 +93,8 @@ public class MemoriesProvider extends ContentProvider {
         return uri;
     }
 
+
+
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         SQLiteDataRepository memoriesDb = new SQLiteDataRepository(getContext());
@@ -102,7 +105,9 @@ public class MemoriesProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return 0;
+        SQLiteDataRepository memoriesDb = new SQLiteDataRepository(getContext());
+        memoriesDb.openDatabaseForWrite();
+        return memoriesDb.update(values, selection);
     }
 
     @Override

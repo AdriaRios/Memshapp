@@ -13,6 +13,7 @@ public class MemoryDataVO {
     private String date;
     private Double latitude;
     private Double longitude;
+    private String memoryCode;
 
     public MemoryDataVO(int id,
                         String title,
@@ -22,7 +23,8 @@ public class MemoryDataVO {
                         String imagePath,
                         Double latitude,
                         Double longitude,
-                        String date) {
+                        String date,
+                        String memoryCode) {
         this.id = id;
         this.title = title;
         this.text = text;
@@ -32,6 +34,7 @@ public class MemoryDataVO {
         this.latitude = latitude;
         this.longitude = longitude;
         this.date = date;
+        this.memoryCode = memoryCode;
 
     }
 
@@ -105,6 +108,15 @@ public class MemoryDataVO {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+
+    public String getMemoryCode() {
+        return memoryCode;
+    }
+
+    public void setMemoryCode(String memoryCode) {
+        this.memoryCode = memoryCode;
     }
 
 

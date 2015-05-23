@@ -9,20 +9,21 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class DatabaseOpenHelper extends SQLiteOpenHelper {
     // Variable holding the name of the database to be created
-    private static final String		DATABASE_NAME = "memories";
-    private static final int		DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "memories";
+    private static final int DATABASE_VERSION = 2;
 
     // Variables holding the name of the table and columns to be created
-    public static final String		MEMORY_TABLE_NAME = "MEMORY";
-    public static final String		_ID = "_id";
-    public static final String		MEMORY_TITLE = "tile";
-    public static final String		MEMORY_TEXT = "text";
-    public static final String		MEMORY_AUDIO = "audio";
-    public static final String		MEMORY_VIDEO = "video";
-    public static final String		MEMORY_IMAGE = "image";
-    public static final String		MEMORY_LATITUDE = "latitude";
-    public static final String		MEMORY_LONGITUDE = "longitude";
-    public static final String		MEMORY_DATE = "date";
+    public static final String MEMORY_TABLE_NAME = "MEMORY";
+    public static final String _ID = "_id";
+    public static final String MEMORY_TITLE = "tile";
+    public static final String MEMORY_TEXT = "text";
+    public static final String MEMORY_AUDIO = "audio";
+    public static final String MEMORY_VIDEO = "video";
+    public static final String MEMORY_IMAGE = "image";
+    public static final String MEMORY_LATITUDE = "latitude";
+    public static final String MEMORY_LONGITUDE = "longitude";
+    public static final String MEMORY_DATE = "date";
+    public static final String MEMORY_CODE = "code";
 
     // Static variable containing the name of all the table's columns
     static final String[] COLUMNS = {
@@ -34,7 +35,8 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
             MEMORY_IMAGE,
             MEMORY_LATITUDE,
             MEMORY_LONGITUDE,
-            MEMORY_DATE
+            MEMORY_DATE,
+            MEMORY_CODE
     };
 
     // Variable holding the SQL instruction to create a new table
@@ -49,6 +51,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                     MEMORY_DATE + " TEXT, " +
                     MEMORY_LATITUDE + " REAL, " +
                     MEMORY_LONGITUDE + " REAL)";
+
     // Public constructor. Delegates the construction to the SQLiteOpenHelper class
     public DatabaseOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -57,15 +60,13 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     // Create and initialize the database if not present
     @Override
     public void onCreate(SQLiteDatabase db) {
-
         db.execSQL(CREATE_MEMORY_TABLE);
     }
 
     // Update the database if any changes have occurred (changes in the version number)
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // TODO Auto-generated method stub
-
+        db.execSQL("ALTER TABLE " + MEMORY_TABLE_NAME + " ADD COLUMN " + MEMORY_CODE + " TEXT");
     }
 
 }

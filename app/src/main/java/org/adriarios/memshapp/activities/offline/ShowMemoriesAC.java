@@ -82,6 +82,7 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                 extras.putDouble("DETAILS_LATITUDE", memoryList.get(position).getLatitude());
                 extras.putDouble("DETAILS_LONGITUDE", memoryList.get(position).getLongitude());
                 extras.putString("DETAILS_DATE", memoryList.get(position).getDate());
+                extras.putString("DETAILS_CODE", memoryList.get(position).getMemoryCode());
                 intent.putExtras(extras);
                 startActivity(intent);
 
@@ -153,7 +154,8 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                         MemoriesProvider.MEMORY_VIDEO,
                         MemoriesProvider.MEMORY_LATITUDE,
                         MemoriesProvider.MEMORY_LONGITUDE,
-                        MemoriesProvider.MEMORY_DATE
+                        MemoriesProvider.MEMORY_DATE,
+                        MemoriesProvider.MEMORY_CODE
                 },
                 null,
                 null,
@@ -192,6 +194,9 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                 String date = cursor.getString(
                         cursor.getColumnIndex(MemoriesProvider.MEMORY_DATE)
                 );
+                String memoryCode = cursor.getString(
+                        cursor.getColumnIndex(MemoriesProvider.MEMORY_CODE)
+                );
 
 
                 memoryList.add(
@@ -203,7 +208,8 @@ public class ShowMemoriesAC extends ActionBarActivity implements
                                 imagePath,
                                 latitude,
                                 longitude,
-                                date));
+                                date,
+                                memoryCode));
 
             } while (cursor.moveToNext());
         }

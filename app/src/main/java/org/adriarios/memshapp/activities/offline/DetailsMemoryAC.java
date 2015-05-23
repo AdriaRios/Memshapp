@@ -2,6 +2,7 @@ package org.adriarios.memshapp.activities.offline;
 
 import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -59,6 +60,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     String mDescriptionData;
     String mLocation;
     String mDate;
+    String mCode;
     Double mLatitude;
     Double mLongitude;
     int mID;
@@ -73,6 +75,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     TextView mDateBox;
     TextView mDescription;
     TextView mAddress;
+    MenuItem mSynchronizeMemory;
     VideoViewCustom mVideoView;
     Button mAudioButton;
 
@@ -120,6 +123,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         mLatitude = extras.getDouble("DETAILS_LATITUDE");
         mLongitude = extras.getDouble("DETAILS_LONGITUDE");
         mDate = extras.getString("DETAILS_DATE");
+        mCode = extras.getString("DETAILS_CODE");
 
 
         mTitle.setText(mTitleData);
@@ -229,8 +233,6 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
             mediaController.setAnchorView(mVideoView);
             mVideoView.setMediaController(mediaController);
             mVideoView.seekTo(1);
-
-
         }
 
         if (mAudioPath == null) {
@@ -253,31 +255,86 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_details_memory, menu);
+        mSynchronizeMemory = menu.findItem(R.id.synchronizeMemory);
+
+        if (mCode != null) {
+            mSynchronizeMemory.setVisible(false);
+        }
         return true;
     }
 
-    private void removeMemory() {
+    private void confirmRemoveMemory() {
         AlertDialog.Builder dialog = new AlertDialog.Builder(DetailsMemoryAC.this);
         dialog.setTitle("Estás seguro que quieres eliminar este recuerdo?");
         dialog.setNegativeButton("Cancelar", null);
         dialog.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                CharSequence toastText;
-                if (contentResolver.delete(MemoriesProvider.CONTENT_URI, MemoriesProvider.MEMORY_ID + "=" + mID, null) > 0) {
-                    toastText = "Recuerdo eliminado correctamente";
-                } else {
-                    toastText = "Se ha producido un error al eliminar el recuerdo";
-                }
-                Context context = getApplicationContext();
-                int duration = Toast.LENGTH_SHORT;
-                Toast toast = Toast.makeText(context, toastText, duration);
-                toast.show();
-                returnToShowMemories();
+                removeMemory();
             }
         });
 
         dialog.show();
+    }
+
+    private void removeMemory() {
+        if (!mSynchronizeMemory.isVisible()) {
+            removeMemoryInRemoteBBDD();
+        } else {
+            removeMemoryFromLocalBBDDandNotify();
+        }
+
+    }
+
+    private void removeMemoryInRemoteBBDD() {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    OkHttpClient client = new OkHttpClient();
+
+                    Request request = new Request.Builder()
+                            .url("http://52.11.144.116/services.php?deleteMemory&id=" + mCode)
+                            .build();
+                    Response response = client.newCall(request).execute();
+                    if (response.isSuccessful()) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                removeMemoryFromLocalBBDDandNotify();
+                            }
+                        });
+                    }
+
+                } catch (IOException e) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast toast = Toast.makeText(DetailsMemoryAC.this, "Error al eliminar el recuerdo", Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
+                    });
+                    e.printStackTrace();
+                }
+            }
+        }).start(); // Executes the newly created thread
+
+
+    }
+
+    private void removeMemoryFromLocalBBDDandNotify() {
+        CharSequence toastText;
+        if (contentResolver.delete(MemoriesProvider.CONTENT_URI, MemoriesProvider.MEMORY_ID + "=" + mID, null) > 0) {
+            toastText = "Recuerdo eliminado correctamente";
+        } else {
+            toastText = "Se ha producido un error al eliminar el recuerdo";
+        }
+        Context context = getApplicationContext();
+        int duration = Toast.LENGTH_SHORT;
+        Toast toast = Toast.makeText(context, toastText, duration);
+        toast.show();
+        returnToShowMemories();
     }
 
     private void returnToShowMemories() {
@@ -294,7 +351,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         int id = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (id == R.id.removeMemory) {
-            removeMemory();
+            confirmRemoveMemory();
         } else if (id == R.id.synchronizeMemory) {
             confirmSynchronize();
         }
@@ -393,6 +450,11 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
                             public void run() {
                                 Toast toast = Toast.makeText(DetailsMemoryAC.this, "Recuerdo sincronizado correctamente", Toast.LENGTH_SHORT);
                                 toast.show();
+                                ContentValues args = new ContentValues();
+                                args.put(MemoriesProvider.MEMORY_CODE, String.valueOf(memoryCode));
+                                contentResolver.update(MemoriesProvider.CONTENT_URI, args, MemoriesProvider.MEMORY_ID + "=" + mID, null);
+                                mSynchronizeMemory.setVisible(false);
+                                returnToShowMemories();
                             }
                         });
                     }
@@ -410,8 +472,6 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
                     });
 
                 }
-
-
 
 
             }

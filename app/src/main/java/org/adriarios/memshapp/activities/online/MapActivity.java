@@ -152,7 +152,8 @@ public class MapActivity extends ActionBarActivity implements OnMapReadyCallback
                                         imagePath,
                                         latitude,
                                         longitude,
-                                        date));
+                                        date,
+                                        ""));
 
                     }
 
