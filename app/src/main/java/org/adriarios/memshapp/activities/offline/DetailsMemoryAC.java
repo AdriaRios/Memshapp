@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.MediaController;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,6 +64,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     String mCode;
     Double mLatitude;
     Double mLongitude;
+    ProgressBar progressBar;
     int mID;
 
     //Content resolver reference
@@ -146,7 +148,11 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         myActionVarSupport.setDisplayShowTitleEnabled(false);
         LayoutInflater mInflater = LayoutInflater.from(this);
 
-        View mCustomView = mInflater.inflate(R.layout.menu_details_memory_inflate, null);
+        View mCustomView = mInflater.inflate(R.layout.menu_details_memory_online_inflate, null);
+
+        progressBar = (ProgressBar) mCustomView.findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
+        progressBar.getIndeterminateDrawable().setColorFilter(0xFFFFFFFF, android.graphics.PorterDuff.Mode.MULTIPLY);
 
         ImageButton imageButton = (ImageButton) mCustomView
                 .findViewById(R.id.backToMemoriesListFromDetailsView);
@@ -278,7 +284,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     }
 
     private void removeMemory() {
-        if (!mSynchronizeMemory.isVisible()) {
+        if (mCode != null) {
             removeMemoryInRemoteBBDD();
         } else {
             removeMemoryFromLocalBBDDandNotify();
@@ -383,6 +389,8 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         final MediaType MEDIA_TYPE_MP4 = MediaType.parse("video/mp4");
         final OkHttpClient client = new OkHttpClient();
 
+        mSynchronizeMemory.setVisible(false);
+        progressBar.setVisibility(View.VISIBLE);
 
         SecureRandom random = new SecureRandom();
         final long memoryCode = Math.abs(random.nextLong());
@@ -441,6 +449,8 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
                             public void run() {
                                 Toast toast = Toast.makeText(DetailsMemoryAC.this, "Error al sincronizar", Toast.LENGTH_SHORT);
                                 toast.show();
+                                mSynchronizeMemory.setVisible(true);
+                                progressBar.setVisibility(View.INVISIBLE);
                             }
                         });
                         throw new IOException("Unexpected code " + response);
@@ -454,7 +464,8 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
                                 args.put(MemoriesProvider.MEMORY_CODE, String.valueOf(memoryCode));
                                 contentResolver.update(MemoriesProvider.CONTENT_URI, args, MemoriesProvider.MEMORY_ID + "=" + mID, null);
                                 mSynchronizeMemory.setVisible(false);
-                                returnToShowMemories();
+                                progressBar.setVisibility(View.INVISIBLE);
+                                mCode = String.valueOf(memoryCode);
                             }
                         });
                     }
@@ -468,6 +479,8 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
                         public void run() {
                             Toast toast = Toast.makeText(DetailsMemoryAC.this, "Error al sincronizar", Toast.LENGTH_SHORT);
                             toast.show();
+                            mSynchronizeMemory.setVisible(true);
+                            progressBar.setVisibility(View.INVISIBLE);
                         }
                     });
 
