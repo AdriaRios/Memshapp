@@ -1,6 +1,7 @@
 package org.adriarios.memshapp.activities.offline;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -10,8 +11,8 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import org.adriarios.memshapp.R;
 
@@ -20,9 +21,17 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class RecordAudioAC extends ActionBarActivity {
-    Button mRecordAudioButton;
-    Button mStopAudioButton;
-    Button mPlayAudioButton;
+    final String STATE_READY_FOR_RECORD = "STATE_READY_FOR_RECORD";
+    final String STATE_RECORDING = "STATE_RECORDING";
+    final String STATE_RECORDED = "STATE_RECORDED";
+
+    String currentState;
+
+    Boolean isPlaying = false;
+
+    ImageButton mRecAndStopAudioButton;
+    ImageButton mPlayAudioButton;
+    ImageView mMicroImage;
     String mFileName = null;
     MediaPlayer mPlayer = null;
     MediaRecorder mRecorder = null;
@@ -32,29 +41,101 @@ public class RecordAudioAC extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record_audio_ac);
 
-        initCustomMenu();
-        mRecordAudioButton = (Button) findViewById(R.id.startAudioButton);
-        mRecordAudioButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                startRecording();
-            }
-        });
-
-        mStopAudioButton = (Button) findViewById(R.id.stopAudioButton);
-        mStopAudioButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                stopRecording();
-            }
-
-        });
-
-        mPlayAudioButton = (Button) findViewById(R.id.playAudioButton);
+        mPlayAudioButton = (ImageButton) findViewById(R.id.playButton);
         mPlayAudioButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                playAudioRecorded();
+                onPlayButtonClick();
+            }
+        });
+        mRecAndStopAudioButton = (ImageButton) findViewById(R.id.recButton);
+        mRecAndStopAudioButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                onRecAndStopButtonClick();
             }
 
         });
+
+        mMicroImage = (ImageView)findViewById(R.id.microImageView);
+
+        currentState = STATE_READY_FOR_RECORD;
+
+        initCustomMenu();
+        setStateReadyForRecord();
+    }
+
+    private void setStateReadyForRecord (){
+        currentState = STATE_READY_FOR_RECORD;
+        mMicroImage.setAlpha(0.5f);
+        Drawable playInactive = getResources().getDrawable(R.drawable.play_off);
+        mPlayAudioButton.setImageDrawable(playInactive);
+        mPlayAudioButton.setEnabled(false);
+
+        Drawable recActive = getResources().getDrawable(R.drawable.rec);
+        mRecAndStopAudioButton.setImageDrawable(recActive);
+        mRecAndStopAudioButton.setEnabled(true);
+
+    }
+
+    private void setStateRecording (){
+        currentState = STATE_RECORDING;
+        mMicroImage.setAlpha(1.0f);
+        Drawable playInactive = getResources().getDrawable(R.drawable.play_off);
+        mPlayAudioButton.setImageDrawable(playInactive);
+        mPlayAudioButton.setEnabled(false);
+
+        Drawable stopActive = getResources().getDrawable(R.drawable.stop);
+        mRecAndStopAudioButton.setImageDrawable(stopActive);
+        mRecAndStopAudioButton.setEnabled(true);
+    }
+
+    private void setStateRecorded (){
+        currentState = STATE_RECORDED;
+        mMicroImage.setAlpha(0.5f);
+        Drawable playActive = getResources().getDrawable(R.drawable.play_on);
+        mPlayAudioButton.setImageDrawable(playActive);
+        mPlayAudioButton.setEnabled(true);
+
+        Drawable recActive = getResources().getDrawable(R.drawable.rec);
+        mRecAndStopAudioButton.setImageDrawable(recActive);
+        mRecAndStopAudioButton.setEnabled(true);
+    }
+
+
+    private void onPlayButtonClick() {
+        mPlayer = new MediaPlayer();
+        mPlayAudioButton.setEnabled(false);
+        Drawable recInactive = getResources().getDrawable(R.drawable.rec_off);
+        mRecAndStopAudioButton.setImageDrawable(recInactive);
+        mRecAndStopAudioButton.setEnabled(false);
+        try {
+            mPlayer.setDataSource(mFileName);
+            mPlayer.prepare();
+            mPlayer.start();
+            mPlayer.setOnCompletionListener(new  MediaPlayer.OnCompletionListener() {
+                public  void  onCompletion(MediaPlayer mediaPlayer) {
+                    mPlayAudioButton.setEnabled(true);
+                    Drawable recActive = getResources().getDrawable(R.drawable.rec);
+                    mRecAndStopAudioButton.setImageDrawable(recActive);
+                    mRecAndStopAudioButton.setEnabled(true);
+                }
+            });
+        } catch (IOException e) {
+            //Log.e(LOG_TAG, "prepare() failed");
+        }
+    }
+
+    private void onRecAndStopButtonClick() {
+        switch (currentState) {
+            case STATE_READY_FOR_RECORD:
+            case STATE_RECORDED:
+                setStateRecording();
+                startRecording();
+                break;
+            case STATE_RECORDING:
+                setStateRecorded();
+                stopRecording();
+                break;
+        }
     }
 
     private void initCustomMenu(){
@@ -109,19 +190,6 @@ public class RecordAudioAC extends ActionBarActivity {
         mRecorder.release();
         mRecorder = null;
     }
-
-    private void playAudioRecorded() {
-        mPlayer = new MediaPlayer();
-        try {
-            mPlayer.setDataSource(mFileName);
-            mPlayer.prepare();
-            mPlayer.start();
-        } catch (IOException e) {
-            //Log.e(LOG_TAG, "prepare() failed");
-        }
-    }
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

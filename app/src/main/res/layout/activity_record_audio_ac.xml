@@ -4,10 +4,11 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="#000"
     tools:context="org.adriarios.memshapp.activities.offline.RecordAudioAC">
 
 
-    <Button
+    <!--<Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="REC"
@@ -28,6 +29,34 @@
         android:text="PLAY"
         android:id="@+id/playAudioButton"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />-->
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/microImageView"
+        android:src="@drawable/micro"
+        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/playButton"
+        android:src="@drawable/play_off"
+        android:background="#000"
+        android:layout_marginBottom="63dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/microImageView"
+        android:layout_alignStart="@+id/microImageView" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/recButton"
+        android:src="@drawable/rec"
+        android:background="#000"
+        android:layout_alignTop="@+id/playButton"
+        android:layout_alignRight="@+id/microImageView"
+        android:layout_alignEnd="@+id/microImageView" />
 </RelativeLayout>
