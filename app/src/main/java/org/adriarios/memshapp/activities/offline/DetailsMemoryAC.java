@@ -6,11 +6,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.location.Address;
 import android.location.Geocoder;
 import android.media.MediaPlayer;
-import android.net.Uri;
+import android.media.ThumbnailUtils;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -42,7 +44,6 @@ import org.adriarios.memshapp.R;
 import org.adriarios.memshapp.asynctask.LoadImageWorkerTask;
 import org.adriarios.memshapp.contentprovider.MemoriesProvider;
 import org.adriarios.memshapp.customComponents.ScrollViewCustom;
-import org.adriarios.memshapp.customComponents.VideoViewCustom;
 import org.adriarios.memshapp.models.ImagesDataModel;
 import org.adriarios.memshapp.valueobjects.MemoryDataOnLineVO;
 
@@ -78,8 +79,9 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     TextView mDescription;
     TextView mAddress;
     MenuItem mSynchronizeMemory;
-    VideoViewCustom mVideoView;
+    //VideoViewCustom mVideoView;
     Button mAudioButton;
+    ImageView mImageVideoThumbnail;
 
     MediaController mediaController;
     MediaPlayer mPlayer = null;
@@ -99,8 +101,21 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         mDescription = (TextView) findViewById(R.id.descDetails);
         mAddress = (TextView) findViewById(R.id.addressDetails);
         mAddress.setVisibility(View.INVISIBLE);
-        mVideoView = (VideoViewCustom) findViewById(R.id.videoDetails);
+        //mVideoView = (VideoViewCustom) findViewById(R.id.videoDetails);
         mAudioButton = (Button) findViewById(R.id.playAudioButtonDetails);
+        mImageVideoThumbnail = (ImageView) findViewById(R.id.videoThumbnail);
+        mImageVideoThumbnail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(DetailsMemoryAC.this,
+                        PlayMemoryVideo.class);
+                Bundle extras = new Bundle();
+                extras.putString("DETAILS_VIDEO_PATH", mVideoPath);
+                intent.putExtras(extras);
+                startActivity(intent);
+            }
+        });
+
         mAudioButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 playAudioRecorded();
@@ -111,7 +126,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         this.contentResolver = getContentResolver();
 
 
-        mVideoView.setDimensions(900, 900);
+        //mVideoView.setDimensions(900, 900);
         //Get Memory Info
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
@@ -232,13 +247,35 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
             mImage.setImageBitmap(ImagesDataModel.getInstance().getBitmapFromMemCache(mImagePath));
         }
         if (mVideoPath == null) {
-            mVideoView.setVisibility(View.GONE);
+            mImageVideoThumbnail.setVisibility(View.GONE);
         } else {
-            mVideoView.setVideoURI(Uri.parse(mVideoPath));
+
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    final Bitmap thumb = ThumbnailUtils.createVideoThumbnail(mVideoPath,
+                            MediaStore.Images.Thumbnails.MINI_KIND);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mImageVideoThumbnail.setImageBitmap(thumb);
+                        }
+                    });
+                }
+            }).start();
+
+
+
+
+
+            /*mVideoView.setVideoURI(Uri.parse(mVideoPath));
             mediaController = new MediaController(this);
             mediaController.setAnchorView(mVideoView);
             mVideoView.setMediaController(mediaController);
-            mVideoView.seekTo(1);
+            mVideoView.seekTo(1);*/
+
+
         }
 
         if (mAudioPath == null) {

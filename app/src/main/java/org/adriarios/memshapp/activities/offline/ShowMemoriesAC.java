@@ -69,7 +69,6 @@ public class ShowMemoriesAC extends ActionBarActivity implements
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                Intent i = new Intent();
                 Intent intent = new Intent(ShowMemoriesAC.this,
                         DetailsMemoryAC.class);
                 Bundle extras = new Bundle();
