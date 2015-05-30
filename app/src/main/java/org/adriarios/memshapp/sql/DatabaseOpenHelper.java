@@ -50,7 +50,8 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                     MEMORY_IMAGE + " TEXT, " +
                     MEMORY_DATE + " TEXT, " +
                     MEMORY_LATITUDE + " REAL, " +
-                    MEMORY_LONGITUDE + " REAL)";
+                    MEMORY_LONGITUDE + " REAL, " +
+                    MEMORY_CODE + " TEXT)";
 
     // Public constructor. Delegates the construction to the SQLiteOpenHelper class
     public DatabaseOpenHelper(Context context) {
@@ -60,6 +61,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     // Create and initialize the database if not present
     @Override
     public void onCreate(SQLiteDatabase db) {
+
         db.execSQL(CREATE_MEMORY_TABLE);
     }
 
