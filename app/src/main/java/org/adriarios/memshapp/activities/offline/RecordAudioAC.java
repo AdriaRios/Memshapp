@@ -27,8 +27,6 @@ public class RecordAudioAC extends ActionBarActivity {
 
     String currentState;
 
-    Boolean isPlaying = false;
-
     ImageButton mRecAndStopAudioButton;
     ImageButton mPlayAudioButton;
     ImageView mMicroImage;

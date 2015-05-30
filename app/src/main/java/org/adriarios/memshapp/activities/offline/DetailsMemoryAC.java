@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.media.MediaPlayer;
@@ -53,7 +54,7 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Locale;
 
-public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCallback {
+public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCallback, MediaController.MediaPlayerControl {
     //Data
     String mImagePath;
     String mAudioPath;
@@ -80,8 +81,8 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     TextView mDateBox;
     TextView mDescription;
     TextView mAddress;
+    TextView mPlayAudioText;
     MenuItem mSynchronizeMemory;
-    //VideoViewCustom mVideoView;
     ImageView mAudioButton;
     ImageView mImageVideoThumbnail;
 
@@ -92,18 +93,22 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details_memory);
+
+        mediaController = new MediaController(this);
+
         //Init custom menu
         initCustomMenu();
 
         //Init properties
-        mAudioLayout= (RelativeLayout) findViewById(R.id.audioLayout);
-        mVideoLayout= (RelativeLayout) findViewById(R.id.videoLayout);
+        mAudioLayout = (RelativeLayout) findViewById(R.id.audioLayout);
+        mVideoLayout = (RelativeLayout) findViewById(R.id.videoLayout);
 
         mScrollView = (ScrollViewCustom) findViewById(R.id.scrollViewDetails);
         mImage = (ImageView) findViewById(R.id.imageDetails);
         mTitle = (TextView) findViewById(R.id.titleDetails);
         mDateBox = (TextView) findViewById(R.id.dateDetails);
         mDescription = (TextView) findViewById(R.id.descDetails);
+        mPlayAudioText = (TextView) findViewById(R.id.playAudioTextDetails);
         mAddress = (TextView) findViewById(R.id.addressDetails);
         mAddress.setVisibility(View.INVISIBLE);
         //mVideoView = (VideoViewCustom) findViewById(R.id.videoDetails);
@@ -118,6 +123,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
                 extras.putString("DETAILS_VIDEO_PATH", mVideoPath);
                 intent.putExtras(extras);
                 startActivity(intent);
+                stopAudio();
             }
         });
 
@@ -184,6 +190,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
                         ShowMemoriesAC.class);
 
                 startActivity(intent);
+                stopAudio();
             }
         });
 
@@ -275,18 +282,43 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
 
         if (mAudioPath == null) {
             mAudioLayout.setVisibility(View.GONE);
+        } else {
+            mPlayer = new MediaPlayer();
+            try {
+                mPlayer.setDataSource(mAudioPath);
+                mPlayer.prepare();
+                mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        mediaController.setMediaPlayer(DetailsMemoryAC.this);
+                        mediaController.setEnabled(true);
+                        mediaController.setAnchorView(mAudioLayout);
+                    }
+                });
+                mPlayer.setOnCompletionListener(new  MediaPlayer.OnCompletionListener() {
+                    public  void  onCompletion(MediaPlayer mediaPlayer) {
+                        Drawable playAudioOn = getResources().getDrawable(R.drawable.play_audio_on);
+                        mAudioButton.setImageDrawable(playAudioOn);
+                        mPlayAudioText.setText("REPRODUCIR AUDIO");
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     private void playAudioRecorded() {
-        mPlayer = new MediaPlayer();
-        try {
-            mPlayer.setDataSource(mAudioPath);
-            mPlayer.prepare();
+        if (!mPlayer.isPlaying()) {
+            mPlayAudioText.setText("REPRODUCIENDO...");
             mPlayer.start();
-        } catch (IOException e) {
-            //Log.e(LOG_TAG, "prepare() failed");
+        }else{
+            mPlayAudioText.setText("PAUSE");
+            mPlayer.pause();
         }
+        Drawable playAudioOff = getResources().getDrawable(R.drawable.play_audio_off);
+        mAudioButton.setImageDrawable(playAudioOff);
+        mediaController.show();
     }
 
     @Override
@@ -379,6 +411,15 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         Intent intent = new Intent(DetailsMemoryAC.this,
                 ShowMemoriesAC.class);
         startActivity(intent);
+        stopAudio();
+    }
+
+    private void stopAudio() {
+        if (mPlayer != null) {
+            if (mPlayer.isPlaying()) {
+                mPlayer.stop();
+            }
+        }
     }
 
     @Override
@@ -525,4 +566,66 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
 
     }
 
+    /*Media Player Controls*/
+
+    @Override
+    public void start() {
+        mPlayAudioText.setText("REPRODUCIENDO...");
+        Drawable playAudioOff = getResources().getDrawable(R.drawable.play_audio_off);
+        mAudioButton.setImageDrawable(playAudioOff);
+        mPlayer.start();
+    }
+
+    @Override
+    public void pause() {
+        mPlayAudioText.setText("PAUSE");
+        Drawable playAudioOff = getResources().getDrawable(R.drawable.play_audio_off);
+        mAudioButton.setImageDrawable(playAudioOff);
+        mPlayer.pause();
+    }
+
+    @Override
+    public int getDuration() {
+        return mPlayer.getDuration();
+    }
+
+    @Override
+    public int getCurrentPosition() {
+        return mPlayer.getCurrentPosition();
+    }
+
+    @Override
+    public void seekTo(int pos) {
+        mPlayer.seekTo(pos);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return mPlayer.isPlaying();
+    }
+
+    @Override
+    public int getBufferPercentage() {
+        return 0;
+    }
+
+    @Override
+    public boolean canPause() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekBackward() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekForward() {
+        return true;
+    }
+
+    @Override
+    public int getAudioSessionId() {
+        return 0;
+    }
 }

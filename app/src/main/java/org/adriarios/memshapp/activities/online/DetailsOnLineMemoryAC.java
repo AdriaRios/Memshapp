@@ -2,21 +2,24 @@ package org.adriarios.memshapp.activities.online;
 
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.media.MediaPlayer;
-import android.net.Uri;
+import android.media.ThumbnailUtils;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,12 +31,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
-import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import org.adriarios.memshapp.R;
+import org.adriarios.memshapp.activities.offline.PlayMemoryVideo;
 import org.adriarios.memshapp.customComponents.ScrollViewCustom;
-import org.adriarios.memshapp.customComponents.VideoViewCustom;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -44,7 +47,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 
-public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapReadyCallback {
+public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapReadyCallback, MediaController.MediaPlayerControl {
     //Base Path
     final String BASE_PATH = "http://52.11.144.116/uploads/";
 
@@ -53,7 +56,6 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
     int elementsToLoad = 0;
 
     //Data
-    String mImageFilePath;
     String mAudioFilePath;
     String mVideoFilePath;
     String mImageRemotePath;
@@ -71,15 +73,18 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
     ContentResolver contentResolver;
 
     //View objetcs
+    RelativeLayout mVideoLayout;
+    RelativeLayout mAudioLayout;
     ScrollViewCustom mScrollView;
     ImageView mImage;
     TextView mTitle;
     TextView mDateBox;
     TextView mDescription;
     TextView mAddress;
-    VideoViewCustom mVideoView;
-    Button mAudioButton;
+    TextView mPlayAudioText;
+    ImageView mAudioButton;
     ProgressBar progressBar;
+    ImageView mImageVideoThumbnail;
 
     MediaController mediaController;
     MediaPlayer mPlayer = null;
@@ -89,20 +94,25 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details_on_line_memory_ac);
         //Init custom menu
+        mediaController = new MediaController(this);
         initCustomMenu();
 
         //Init properties
+        mAudioLayout = (RelativeLayout) findViewById(R.id.audioLayoutOL);
+        mAudioLayout.setVisibility(View.GONE);
+        mVideoLayout = (RelativeLayout) findViewById(R.id.videoLayoutOL);
+        mVideoLayout.setVisibility(View.GONE);
+
         mScrollView = (ScrollViewCustom) findViewById(R.id.scrollViewDetailsOL);
         mImage = (ImageView) findViewById(R.id.imageDetailsOL);
         mTitle = (TextView) findViewById(R.id.titleDetailsOL);
         mDateBox = (TextView) findViewById(R.id.dateDetailsOL);
         mDescription = (TextView) findViewById(R.id.descDetailsOL);
+        mPlayAudioText = (TextView) findViewById(R.id.playAudioTextDetailsOL);
         mAddress = (TextView) findViewById(R.id.addressDetailsOL);
         mAddress.setVisibility(View.INVISIBLE);
-        mVideoView = (VideoViewCustom) findViewById(R.id.videoDetailsOL);
-        mVideoView.setVisibility(View.GONE);
-        mAudioButton = (Button) findViewById(R.id.playAudioButtonDetailsOL);
-        mAudioButton.setVisibility(View.GONE);
+
+        mAudioButton = (ImageView) findViewById(R.id.playAudioButtonDetailsOL);
         mAudioButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 playAudioRecorded();
@@ -110,10 +120,23 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
 
         });
 
+        mImageVideoThumbnail = (ImageView) findViewById(R.id.videoThumbnailOL);
+        mImageVideoThumbnail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(DetailsOnLineMemoryAC.this,
+                        PlayMemoryVideo.class);
+                Bundle extras = new Bundle();
+                extras.putString("DETAILS_VIDEO_PATH", mVideoFilePath);
+                intent.putExtras(extras);
+                startActivity(intent);
+                stopAudio();
+            }
+        });
+
         this.contentResolver = getContentResolver();
 
 
-        mVideoView.setDimensions(900, 900);
         //Get Memory Info
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
@@ -163,6 +186,7 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
                         MapActivity.class);
 
                 startActivity(intent);
+                stopAudio();
             }
         });
 
@@ -244,20 +268,20 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
 
 
         if (mVideoRemotePath == null || mVideoRemotePath.isEmpty()) {
-            mVideoView.setVisibility(View.GONE);
+            mVideoLayout.setVisibility(View.GONE);
         } else {
             elementsToLoad++;
             downloadVideo();
         }
 
         if (mAudioRemotePath == null || mAudioRemotePath.isEmpty()) {
-            mAudioButton.setVisibility(View.GONE);
+            mAudioLayout.setVisibility(View.GONE);
         } else {
             elementsToLoad++;
             downloadAudio();
         }
 
-        if (elementsToLoad > 0){
+        if (elementsToLoad > 0) {
             progressBar.setVisibility(View.VISIBLE);
         }
     }
@@ -293,16 +317,15 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
                     output.close();
                     input.close();
 
+                    final Bitmap thumb = ThumbnailUtils.createVideoThumbnail(mVideoFilePath,
+                            MediaStore.Images.Thumbnails.MINI_KIND);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             checkHideProgressBar();
-                            mVideoView.setVisibility(View.VISIBLE);
-                            mVideoView.setVideoURI(Uri.parse(mVideoFilePath));
-                            mediaController = new MediaController(DetailsOnLineMemoryAC.this);
-                            mediaController.setAnchorView(mVideoView);
-                            mVideoView.setMediaController(mediaController);
-                            mVideoView.seekTo(1);
+                            mVideoLayout.setVisibility(View.VISIBLE);
+                            mImageVideoThumbnail.setImageBitmap(thumb);
+                            ;
                         }
                     });
                 } catch (IOException e) {
@@ -355,7 +378,29 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
                         @Override
                         public void run() {
                             checkHideProgressBar();
-                            mAudioButton.setVisibility(View.VISIBLE);
+                            mAudioLayout.setVisibility(View.VISIBLE);
+                            mPlayer = new MediaPlayer();
+                            try {
+                                mPlayer.setDataSource(mAudioFilePath);
+                                mPlayer.prepare();
+                                mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                    @Override
+                                    public void onPrepared(MediaPlayer mp) {
+                                        mediaController.setMediaPlayer(DetailsOnLineMemoryAC.this);
+                                        mediaController.setEnabled(true);
+                                        mediaController.setAnchorView(mAudioLayout);
+                                    }
+                                });
+                                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                    public void onCompletion(MediaPlayer mediaPlayer) {
+                                        Drawable playAudioOn = getResources().getDrawable(R.drawable.play_audio_on);
+                                        mAudioButton.setImageDrawable(playAudioOn);
+                                        mPlayAudioText.setText("REPRODUCIR AUDIO");
+                                    }
+                                });
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
                 } catch (IOException e) {
@@ -376,21 +421,31 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
         }).start(); // Executes the newly created thread
     }
 
-    private void checkHideProgressBar () {
+    private void checkHideProgressBar() {
         loadedElements++;
-        if (loadedElements == elementsToLoad){
+        if (loadedElements == elementsToLoad) {
             progressBar.setVisibility(View.GONE);
         }
     }
 
     private void playAudioRecorded() {
-        mPlayer = new MediaPlayer();
-        try {
-            mPlayer.setDataSource(mAudioFilePath);
-            mPlayer.prepare();
+        if (!mPlayer.isPlaying()) {
+            mPlayAudioText.setText("REPRODUCIENDO...");
             mPlayer.start();
-        } catch (IOException e) {
-            //Log.e(LOG_TAG, "prepare() failed");
+        } else {
+            mPlayAudioText.setText("PAUSE");
+            mPlayer.pause();
+        }
+        Drawable playAudioOff = getResources().getDrawable(R.drawable.play_audio_off);
+        mAudioButton.setImageDrawable(playAudioOff);
+        mediaController.show();
+    }
+
+    private void stopAudio() {
+        if (mPlayer != null) {
+            if (mPlayer.isPlaying()) {
+                mPlayer.stop();
+            }
         }
     }
 
@@ -406,4 +461,66 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
     public boolean onOptionsItemSelected(MenuItem item) {
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void start() {
+        mPlayAudioText.setText("REPRODUCIENDO...");
+        Drawable playAudioOff = getResources().getDrawable(R.drawable.play_audio_off);
+        mAudioButton.setImageDrawable(playAudioOff);
+        mPlayer.start();
+    }
+
+    @Override
+    public void pause() {
+        mPlayAudioText.setText("PAUSE");
+        Drawable playAudioOff = getResources().getDrawable(R.drawable.play_audio_off);
+        mAudioButton.setImageDrawable(playAudioOff);
+        mPlayer.pause();
+    }
+
+    @Override
+    public int getDuration() {
+        return mPlayer.getDuration();
+    }
+
+    @Override
+    public int getCurrentPosition() {
+        return mPlayer.getCurrentPosition();
+    }
+
+    @Override
+    public void seekTo(int pos) {
+        mPlayer.seekTo(pos);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return mPlayer.isPlaying();
+    }
+
+    @Override
+    public int getBufferPercentage() {
+        return 0;
+    }
+
+    @Override
+    public boolean canPause() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekBackward() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekForward() {
+        return true;
+    }
+
+    @Override
+    public int getAudioSessionId() {
+        return 0;
+    }
+
 }

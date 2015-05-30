@@ -31,6 +31,7 @@ public class PlayMemoryVideo extends ActionBarActivity {
         mediaController.setAnchorView(mVideoView);
         mVideoView.setMediaController(mediaController);
         mVideoView.seekTo(1);
+        mVideoView.start();
     }
 
 
