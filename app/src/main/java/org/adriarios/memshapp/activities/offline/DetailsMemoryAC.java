@@ -414,6 +414,12 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         stopAudio();
     }
 
+    @Override
+    public void onBackPressed() {
+        stopAudio();
+        super.onBackPressed();
+    }
+
     private void stopAudio() {
         if (mPlayer != null) {
             if (mPlayer.isPlaying()) {

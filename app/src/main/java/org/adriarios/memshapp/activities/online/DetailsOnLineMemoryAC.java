@@ -441,6 +441,12 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
         mediaController.show();
     }
 
+    @Override
+    public void onBackPressed() {
+        stopAudio();
+        super.onBackPressed();
+    }
+
     private void stopAudio() {
         if (mPlayer != null) {
             if (mPlayer.isPlaying()) {
