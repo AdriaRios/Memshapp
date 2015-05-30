@@ -317,15 +317,16 @@ public class DetailsOnLineMemoryAC extends ActionBarActivity implements OnMapRea
                     output.close();
                     input.close();
 
-                    final Bitmap thumb = ThumbnailUtils.createVideoThumbnail(mVideoFilePath,
-                            MediaStore.Images.Thumbnails.MINI_KIND);
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             checkHideProgressBar();
                             mVideoLayout.setVisibility(View.VISIBLE);
+                            final Bitmap thumb = ThumbnailUtils.createVideoThumbnail(mVideoFilePath,
+                                    MediaStore.Images.Thumbnails.MINI_KIND);
                             mImageVideoThumbnail.setImageBitmap(thumb);
-                            ;
+
                         }
                     });
                 } catch (IOException e) {
