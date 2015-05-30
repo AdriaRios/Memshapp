@@ -19,11 +19,11 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -72,6 +72,8 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     ContentResolver contentResolver;
 
     //View objetcs
+    RelativeLayout mVideoLayout;
+    RelativeLayout mAudioLayout;
     ScrollViewCustom mScrollView;
     ImageView mImage;
     TextView mTitle;
@@ -80,7 +82,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
     TextView mAddress;
     MenuItem mSynchronizeMemory;
     //VideoViewCustom mVideoView;
-    Button mAudioButton;
+    ImageView mAudioButton;
     ImageView mImageVideoThumbnail;
 
     MediaController mediaController;
@@ -94,6 +96,9 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         initCustomMenu();
 
         //Init properties
+        mAudioLayout= (RelativeLayout) findViewById(R.id.audioLayout);
+        mVideoLayout= (RelativeLayout) findViewById(R.id.videoLayout);
+
         mScrollView = (ScrollViewCustom) findViewById(R.id.scrollViewDetails);
         mImage = (ImageView) findViewById(R.id.imageDetails);
         mTitle = (TextView) findViewById(R.id.titleDetails);
@@ -102,7 +107,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
         mAddress = (TextView) findViewById(R.id.addressDetails);
         mAddress.setVisibility(View.INVISIBLE);
         //mVideoView = (VideoViewCustom) findViewById(R.id.videoDetails);
-        mAudioButton = (Button) findViewById(R.id.playAudioButtonDetails);
+        mAudioButton = (ImageView) findViewById(R.id.playAudioButtonDetails);
         mImageVideoThumbnail = (ImageView) findViewById(R.id.videoThumbnail);
         mImageVideoThumbnail.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -247,7 +252,7 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
             mImage.setImageBitmap(ImagesDataModel.getInstance().getBitmapFromMemCache(mImagePath));
         }
         if (mVideoPath == null) {
-            mImageVideoThumbnail.setVisibility(View.GONE);
+            mVideoLayout.setVisibility(View.GONE);
         } else {
 
             new Thread(new Runnable() {
@@ -266,20 +271,10 @@ public class DetailsMemoryAC extends ActionBarActivity implements OnMapReadyCall
             }).start();
 
 
-
-
-
-            /*mVideoView.setVideoURI(Uri.parse(mVideoPath));
-            mediaController = new MediaController(this);
-            mediaController.setAnchorView(mVideoView);
-            mVideoView.setMediaController(mediaController);
-            mVideoView.seekTo(1);*/
-
-
         }
 
         if (mAudioPath == null) {
-            mAudioButton.setVisibility(View.GONE);
+            mAudioLayout.setVisibility(View.GONE);
         }
     }
 
