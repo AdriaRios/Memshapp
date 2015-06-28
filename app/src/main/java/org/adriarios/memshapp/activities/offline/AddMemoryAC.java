@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -26,6 +27,7 @@ import org.adriarios.memshapp.R;
 import org.adriarios.memshapp.contentprovider.MemoriesProvider;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -178,17 +180,17 @@ public class AddMemoryAC extends ActionBarActivity {
         Calendar c = Calendar.getInstance();
 
         int day = c.get(Calendar.DAY_OF_MONTH);
-        int month = c.get(Calendar.MONTH)+1;
+        int month = c.get(Calendar.MONTH) + 1;
         int year = c.get(Calendar.YEAR);
 
         String date = paddingZero(day) + "/" + paddingZero(month) + "/" + year;
-        return  date;
+        return date;
     }
 
     private String paddingZero(int number) {
         String output = String.valueOf(number);
-        if (number < 10){
-            output = "0"+output;
+        if (number < 10) {
+            output = "0" + output;
         }
         return output;
     }
@@ -288,6 +290,12 @@ public class AddMemoryAC extends ActionBarActivity {
 
         if (requestCode == REQUEST_IMAGE_GALLERY_CAPTURE && resultCode == RESULT_OK) {
             Uri selectedImage = data.getData();
+            /*try {
+                Bitmap bitmap = getBitmapFromUri(selectedImage);
+                mImageButton.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }*/
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
             Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
             if (cursor.moveToFirst()) {
@@ -308,8 +316,16 @@ public class AddMemoryAC extends ActionBarActivity {
             Drawable videoCheckIcon = getResources().getDrawable(R.drawable.upload_video_icon_check);
             mVideoButton.setImageDrawable(videoCheckIcon);
         }
+    }
 
+    private Bitmap getBitmapFromUri(Uri uri) throws IOException {
+        ParcelFileDescriptor parcelFileDescriptor =
+                getContentResolver().openFileDescriptor(uri, "r");
+        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+        Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
+        parcelFileDescriptor.close();
 
+        return image;
     }
 
     private void setPic() {
